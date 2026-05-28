@@ -48,7 +48,7 @@ div
           span.d-none.d-md-inline
             |  Refresh
 
-  div.row(v-if="showOptions" style="background-color: #EEE;").my-3.py-3
+  div.row(v-if="showOptions" style="background-color: var(--aw-accent-light); border: 1px solid var(--aw-card-border); border-radius: 12px;").my-3.py-3
     div.col-md-12
       h5 Filters
     div.col-md-6
@@ -107,43 +107,101 @@ div
 @import '../../style/globals';
 
 .nav {
-  border-bottom: 1px solid $lightBorderColor;
+  border: 1px solid var(--aw-card-border) !important;
+  background-color: var(--aw-card-bg) !important;
+  backdrop-filter: blur(12px);
+  padding: 0.35rem !important;
+  border-radius: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 
   .nav-item {
-    margin-bottom: 0px;
-
-    &:first-child {
-      margin-left: 0;
-    }
+    margin: 0 !important;
 
     .nav-link {
-      // default bootstrap vertical padding was too high
-      padding: 0.25rem 1rem;
-
-      color: lighten(black, 40%);
+      padding: 0.5rem 1.25rem !important;
+      color: var(--aw-text-secondary) !important;
       cursor: pointer;
-      border: none;
+      border: none !important;
+      border-radius: 10px !important;
+      transition: all var(--aw-transition-fast) !important;
+      font-family: 'Outfit', sans-serif !important;
+      font-weight: 600 !important;
+      font-size: 0.88rem !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      
+      h6 {
+        margin: 0 !important;
+        font-size: inherit !important;
+        font-weight: inherit !important;
+        font-family: inherit !important;
+        color: inherit !important;
+      }
 
       &:hover {
-        color: black !important;
-        border-bottom: 3px solid lighten(black, 70%);
-        border-radius: 0;
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        color: var(--aw-text-primary) !important;
       }
 
       &.router-link-exact-active {
-        color: $activeHighlightColor !important;
-        border-bottom: 3px solid lighten($activeHighlightColor, 15%);
-        border-radius: 0;
-
-        // Does nothing for Verala Round
-        font-weight: bold;
-
-        &:hover {
-          background-color: #fff;
-        }
+        background: var(--aw-primary-gradient) !important;
+        color: white !important;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15) !important;
       }
     }
   }
+}
+
+.input-group {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  border-radius: var(--aw-border-radius-md);
+  overflow: hidden;
+  border: 1px solid var(--aw-input-border);
+  background-color: var(--aw-input-bg);
+  align-items: center;
+  
+  .input-group-prepend .btn,
+  .input-group-append .btn {
+    border: none !important;
+    border-radius: 0 !important;
+    background-color: transparent !important;
+    height: 100%;
+    color: var(--aw-text-primary) !important;
+    padding: 0.5rem 0.9rem !important;
+    
+    &:hover {
+      background-color: var(--aw-accent-light) !important;
+      color: var(--aw-accent-color) !important;
+    }
+  }
+  
+  .custom-select, select {
+    border: none !important;
+    border-radius: 0 !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    padding-left: 0.75rem !important;
+  }
+}
+
+input[type="date"] {
+  border-radius: var(--aw-border-radius-md) !important;
+  font-weight: 500;
+  padding: 0.5rem 0.85rem !important;
+  border-color: var(--aw-input-border) !important;
+  color: var(--aw-text-primary) !important;
+}
+
+.badge-secondary {
+  background: var(--aw-primary-gradient) !important;
+  color: white !important;
+  font-weight: 600;
 }
 </style>
 

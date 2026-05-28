@@ -4,8 +4,8 @@ div(:class="{'fixed-top-padding': fixedTopMenu}")
     // Brand on mobile
     b-navbar-nav.d-block.d-lg-none
       b-navbar-brand(to="/" style="background-color: transparent;")
-        img.aligh-middle(src="/logo.png" style="height: 1.5em;")
-        span.ml-2.align-middle(style="font-size: 1em; color: #000;") ActivityWatch
+        img.align-middle(src="/logo.png" style="height: 1.5em; transition: transform 0.3s ease;")
+        span.ml-2.align-middle(style="font-size: 1.1em; color: var(--aw-text-primary); font-weight: 800; letter-spacing: -0.02em;") ActivityWatch
 
     b-navbar-toggle(target="nav-collapse")
 
@@ -34,7 +34,7 @@ div(:class="{'fixed-top-padding': fixedTopMenu}")
             icon(:name="view.icon")
             | {{ view.name }}
 
-        b-nav-item(to="/timeline" style="font-color: #000;")
+        b-nav-item(to="/timeline")
           div.px-2.px-lg-1
             icon(name="stream")
             | Timeline
@@ -46,9 +46,9 @@ div(:class="{'fixed-top-padding': fixedTopMenu}")
 
       // Brand on large screens (centered)
       b-navbar-nav.abs-center.d-none.d-lg-block
-        b-navbar-brand(to="/" style="background-color: transparent;")
-          img.ml-0.aligh-middle(src="/logo.png" style="height: 1.5em;")
-          span.ml-2.align-middle(style="font-size: 1.0em; color: #000;") ActivityWatch
+        b-navbar-brand(to="/" style="background-color: transparent; display: flex; align-items: center;")
+          img.ml-0.align-middle(src="/logo.png" style="height: 1.5em; transition: transform 0.3s ease;")
+          span.ml-2.align-middle(style="font-size: 1.15em; color: var(--aw-text-primary); font-weight: 800; letter-spacing: -0.02em;") ActivityWatch
 
       b-navbar-nav.ml-auto
         b-nav-item-dropdown
@@ -190,20 +190,69 @@ export default {
 @import '../style/globals';
 
 .aw-navbar {
-  background-color: white;
-  border: solid $lightBorderColor;
-  border-width: 0 0 1px 0;
+  background: var(--aw-card-bg) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--aw-card-border) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0.6rem 1.5rem;
+  
+  &:not(.fixed-top) {
+    margin: 1.25rem auto 0.75rem auto;
+    border-radius: 16px;
+    width: calc(100% - 2rem);
+    max-width: 1200px;
+  }
+  
+  &.fixed-top {
+    border-width: 0 0 1px 0 !important;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+  }
 }
 
 .nav-item {
   align-items: center;
+  margin-left: 0.15em;
+  margin-right: 0.15em;
+  border-radius: 10px;
+  transition: all 0.25s ease;
 
-  margin-left: 0.2em;
-  margin-right: 0.2em;
-  border-radius: 0.5em;
+  .nav-link {
+    color: var(--aw-text-secondary) !important;
+    font-weight: 500;
+    font-size: 0.95rem;
+    padding: 0.5rem 1rem !important;
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.25s ease;
+    
+    .fa-icon {
+      margin: 0;
+      opacity: 0.7;
+      transition: transform 0.25s ease, opacity 0.25s ease;
+    }
+  }
 
-  &:hover {
-    background-color: #ddd;
+  &:hover, &.active, &.show {
+    background-color: var(--aw-accent-light) !important;
+    
+    .nav-link {
+      color: var(--aw-accent-color) !important;
+      
+      .fa-icon {
+        opacity: 1;
+        transform: translateY(-1px) scale(1.05);
+      }
+    }
+  }
+}
+
+.navbar-brand:hover {
+  img {
+    transform: rotate(10deg) scale(1.05);
   }
 }
 
@@ -218,7 +267,40 @@ export default {
 // Needed because dropdown somehow doesn't properly work with scoping
 .nav-item {
   .nav-link {
-    color: #555 !important;
+    color: var(--aw-text-secondary) !important;
+    
+    &:hover {
+      color: var(--aw-accent-color) !important;
+    }
+  }
+}
+
+.dropdown-menu {
+  border-radius: 12px !important;
+  padding: 0.5rem !important;
+  
+  .dropdown-item {
+    border-radius: 8px !important;
+    padding: 0.5rem 1rem !important;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--aw-text-secondary) !important;
+    
+    .fa-icon {
+      opacity: 0.7;
+    }
+    
+    &:hover {
+      background-color: var(--aw-accent-light) !important;
+      color: var(--aw-accent-color) !important;
+      
+      .fa-icon {
+        opacity: 1;
+      }
+    }
   }
 }
 </style>

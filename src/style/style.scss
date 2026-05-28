@@ -1,21 +1,201 @@
 @import "globals";
 
+/* ActivityWatch Modern UI Design System Custom Variables */
+:root {
+  color-scheme: light;
+  
+  /* Color Palette */
+  --aw-bg-gradient: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  --aw-card-bg: rgba(255, 255, 255, 0.85);
+  --aw-card-border: rgba(226, 232, 240, 0.8);
+  --aw-card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.01);
+  --aw-card-shadow-hover: 0 20px 45px -12px rgba(79, 70, 229, 0.12), 0 4px 12px rgba(79, 70, 229, 0.04);
+  
+  --aw-text-primary: #1e293b;
+  --aw-text-secondary: #64748b;
+  --aw-text-muted: #94a3b8;
+  
+  --aw-primary-gradient: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+  --aw-primary-hover-gradient: linear-gradient(135deg, #4338ca 0%, #2563eb 100%);
+  --aw-accent-color: #4f46e5;
+  --aw-accent-light: rgba(79, 70, 229, 0.08);
+  
+  --aw-border-radius-lg: 16px;
+  --aw-border-radius-md: 10px;
+  --aw-border-radius-sm: 6px;
+  
+  --aw-transition-fast: 0.15s ease;
+  --aw-transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  --aw-input-bg: #ffffff;
+  --aw-input-border: #e2e8f0;
+  --aw-input-focus-border: #818cf8;
+}
+
 body,
+html {
+  min-height: 100vh;
+}
+
+body,
+button,
 html,
-body,
-button {
-  color: $textColor;
-  font-family: -apple-system , BlinkMacSystemFont , "Segoe UI" , "Roboto" , "Helvetica Neue" , "Ubuntu" , sans-serif;
+input,
+select,
+textarea {
+  color: var(--aw-text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-h1, h2, h3, h4, h5, h6, nav {
-  font-family: 'Varela Round', sans-serif;
+h1, h2, h3, h4, h5, h6, nav, .navbar-brand {
+  font-family: 'Outfit', 'Varela Round', sans-serif;
+  font-weight: 700;
+  color: var(--aw-text-primary);
+  letter-spacing: -0.02em;
 }
 
 body {
-  background-color: $backgroundColor;
+  background: var(--aw-bg-gradient);
+  background-attachment: fixed;
+}
+
+/* Premium Card Container Overwrite */
+.aw-container {
+  background-color: var(--aw-card-bg) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--aw-card-border) !important;
+  border-radius: var(--aw-border-radius-lg);
+  box-shadow: var(--aw-card-shadow);
+  transition: transform var(--aw-transition-normal), box-shadow var(--aw-transition-normal), border-color var(--aw-transition-normal);
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--aw-card-shadow-hover);
+    border-color: rgba(79, 70, 229, 0.15) !important;
+  }
+}
+
+/* Form Controls and Interactive Inputs */
+.form-control,
+.custom-select,
+select {
+  background-color: var(--aw-input-bg) !important;
+  border: 1px solid var(--aw-input-border) !important;
+  border-radius: var(--aw-border-radius-md) !important;
+  color: var(--aw-text-primary) !important;
+  padding: 0.5rem 1rem !important;
+  height: auto !important;
+  font-size: 0.92rem !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+  transition: border-color var(--aw-transition-fast), box-shadow var(--aw-transition-fast) !important;
+  
+  &:focus {
+    border-color: var(--aw-input-focus-border) !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+    outline: none !important;
+  }
+}
+
+/* Custom Checkbox Design */
+.custom-control-input:checked ~ .custom-control-label::before {
+  background: var(--aw-primary-gradient) !important;
+  border-color: transparent !important;
+}
+
+/* Premium Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* Tables Styling Upgrade */
+.table {
+  color: var(--aw-text-primary) !important;
+  border-collapse: separate;
+  border-spacing: 0;
+  
+  th {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    color: var(--aw-text-secondary);
+    border-bottom: 2px solid var(--aw-card-border) !important;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    padding: 1rem 0.75rem !important;
+  }
+  
+  td {
+    border-top: 1px solid var(--aw-card-border) !important;
+    padding: 0.9rem 0.75rem !important;
+    vertical-align: middle !important;
+    font-size: 0.92rem;
+  }
+  
+  tr {
+    transition: background-color var(--aw-transition-fast);
+  }
+  
+  tbody tr:hover {
+    background-color: var(--aw-accent-light) !important;
+  }
+}
+
+/* Global button animations */
+.btn {
+  border-radius: var(--aw-border-radius-md) !important;
+  font-weight: 500 !important;
+  padding: 0.5rem 1.25rem !important;
+  font-size: 0.9rem !important;
+  transition: transform var(--aw-transition-fast), box-shadow var(--aw-transition-fast), background-color var(--aw-transition-fast), border-color var(--aw-transition-fast) !important;
+  
+  &:active {
+    transform: scale(0.97) !important;
+  }
+}
+
+.btn-outline-dark {
+  border-color: #cbd5e1 !important;
+  color: var(--aw-text-primary) !important;
+  
+  &:hover {
+    background-color: var(--aw-accent-light) !important;
+    border-color: var(--aw-accent-color) !important;
+    color: var(--aw-accent-color) !important;
+  }
+}
+
+.btn-success {
+  background: var(--aw-primary-gradient) !important;
+  border: none !important;
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.15) !important;
+  color: white !important;
+  
+  &:hover {
+    box-shadow: 0 6px 14px rgba(79, 70, 229, 0.25) !important;
+    background: var(--aw-primary-hover-gradient) !important;
+  }
 }
 
 // To make icons a little less crowded
@@ -24,10 +204,4 @@ body {
   margin-left: 4px;
   margin-right: 4px;
   vertical-align: middle;
-}
-
-.aw-container {
-  background-color: #fff;
-  border: 1px solid $lightBorderColor;
-  border-radius: 5px;
 }
