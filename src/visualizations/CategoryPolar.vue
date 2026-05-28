@@ -1,13 +1,13 @@
 <template lang="pug">
 div.aw-polar-vis
   div.d-flex.flex-column.align-items-center.justify-content-center
-    div.svg-container(style="position: relative; width: 260px; height: 260px;")
-      svg(width="260" height="260" viewBox="0 0 260 260" style="overflow: visible;")
-        g(transform="translate(130, 130)")
+    div.svg-container(:style="{ position: 'relative', width: size + 'px', height: size + 'px' }")
+      svg(:width="size" :height="size" :viewBox="'0 0 ' + size + ' ' + size" style="overflow: visible;")
+        g(:transform="'translate(' + (size / 2) + ', ' + (size / 2) + ')'")
           // Outer concentric helper grids for technical premium theme
-          circle(r="45" fill="none" stroke="rgba(255, 255, 255, 0.04)" stroke-width="1")
-          circle(r="80" fill="none" stroke="rgba(255, 255, 255, 0.04)" stroke-width="1" stroke-dasharray="4,4")
-          circle(r="115" fill="none" stroke="rgba(255, 255, 255, 0.04)" stroke-width="1")
+          circle(:r="45 * scaleFactor" fill="none" stroke="rgba(255, 255, 255, 0.04)" stroke-width="1")
+          circle(:r="80 * scaleFactor" fill="none" stroke="rgba(255, 255, 255, 0.04)" stroke-width="1" stroke-dasharray="4,4")
+          circle(:r="115 * scaleFactor" fill="none" stroke="rgba(255, 255, 255, 0.04)" stroke-width="1")
 
           // Outer glow paths
           path(
@@ -35,7 +35,7 @@ div.aw-polar-vis
           )
           
       // Center Glassmorphic display
-      div.center-display.d-flex.flex-column.align-items-center.justify-content-center
+      div.center-display.d-flex.flex-column.align-items-center.justify-content-center(:style="centerDisplayStyle")
         span.center-label {{ hoveredLabel || 'Polar Stats' }}
         span.center-value {{ hoveredValue || totalDurationFormatted }}
         span.center-percent(v-if="hoveredPercent") {{ hoveredPercent }}%
@@ -71,6 +71,10 @@ export default {
       type: Array,
       default: null,
     },
+    height: {
+      type: Number,
+      default: 260,
+    },
   },
   data() {
     return {
@@ -94,14 +98,32 @@ export default {
     totalDurationFormatted() {
       return seconds_to_duration(this.totalDuration);
     },
+    size() {
+      return Math.min(230, this.height);
+    },
+    scaleFactor() {
+      return this.size / 260;
+    },
+    centerDisplayStyle() {
+      const displaySize = Math.round(this.size * 0.35); // Polar displays can have smaller center Display
+      const offset = Math.round((this.size - displaySize) / 2);
+      return {
+        width: displaySize + 'px',
+        height: displaySize + 'px',
+        top: offset + 'px',
+        left: offset + 'px',
+        fontSize: this.size < 200 ? '0.62rem' : '0.72rem',
+      };
+    },
     slices() {
       const topCategories = this.categoryData.slice(0, 8); // Limit to top 8 categories
       const N = topCategories.length;
       if (N === 0) return [];
 
       const maxDuration = _.maxBy(topCategories, (c: any) => c.duration)?.duration || 1;
-      const minRadius = 45;
-      const maxRadius = 115;
+      
+      const minRadius = 45 * this.scaleFactor;
+      const maxRadius = 115 * this.scaleFactor;
       const angleStep = (2 * Math.PI) / N;
 
       const categoryStore = useCategoryStore();
@@ -122,9 +144,9 @@ export default {
         };
 
         const arcGenerator = d3.arc()
-          .innerRadius(15) // small central hole
+          .innerRadius(15 * this.scaleFactor) // small central hole
           .outerRadius(radius)
-          .cornerRadius(5)
+          .cornerRadius(5 * this.scaleFactor)
           .padAngle(0.04);
 
         const path = arcGenerator(d as any) || '';

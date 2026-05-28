@@ -12,7 +12,7 @@ div.vis-widget-card
     b-button.p-0.mr-2(v-if="has_prerequisites" size="sm" variant="outline-secondary" @click="isFocused = true" title="Focus view & details")
       icon(name="expand")
 
-    b-button.p-0.mr-1(v-if="editable" size="sm" variant="outline-secondary" @click="$emit('openSettings', { index: id, type: type, colSpan: colSpan, rowSpan: rowSpan, rect: $event.currentTarget.getBoundingClientRect() })" title="Widget settings")
+    b-button.p-0.mr-1(v-if="editable" size="sm" variant="outline-secondary" @click="$emit('openSettings', { index: id, type: type, colSpan: colSpan, rowSpan: rowSpan, rect: $el.getBoundingClientRect() })" title="Widget settings")
       icon(name="cog")
 
     b-button.p-0(v-if="editable" size="sm" variant="outline-danger" @click="$emit('onRemove', id)")
@@ -83,13 +83,13 @@ div.vis-widget-card
     div(v-if="type == 'category_sunburst'" :style="{ height: visHeight + 'px' }")
       aw-sunburst-categories(:data="top_categories_hierarchy", :style="{ height: visHeight + 'px' }")
     div(v-if="type == 'category_doughnut'" :style="{ height: visHeight + 'px' }")
-      aw-categorydoughnut(:events="activityStore.category.top")
+      aw-categorydoughnut(:events="activityStore.category.top", :height="visHeight")
     div(v-if="type == 'category_polar'" :style="{ height: visHeight + 'px' }")
-      aw-categorypolar(:events="activityStore.category.top")
+      aw-categorypolar(:events="activityStore.category.top", :height="visHeight")
     div(v-if="type == 'timeline_barchart'" :style="{ height: visHeight + 'px' }")
       aw-timeline-barchart(:datasets="datasets", :timeperiod_start="activityStore.query_options.timeperiod.start", :timeperiod_length="activityStore.query_options.timeperiod.length", :height="visHeight")
     div(v-if="type == 'sunburst_clock'" :style="{ height: visHeight + 'px' }")
-      aw-sunburst-clock(:date="date", :afkBucketId="activityStore.buckets.afk[0]", :windowBucketId="activityStore.buckets.window[0]")
+      aw-sunburst-clock(:date="date", :afkBucketId="activityStore.buckets.afk[0]", :windowBucketId="activityStore.buckets.window[0]", :height="visHeight")
     div(v-if="type == 'custom_vis'")
       aw-custom-vis(:visname="props.visname" :title="props.title")
     div(v-if="type == 'vis_timeline' && isSingleDay" :style="{ height: visHeight + 'px' }")
@@ -160,13 +160,13 @@ div.vis-widget-card
         div(v-if="type == 'category_sunburst'")
           aw-sunburst-categories(:data="top_categories_hierarchy", style="height: 25em")
         div(v-if="type == 'category_doughnut'")
-          aw-categorydoughnut(:events="activityStore.category.top")
+          aw-categorydoughnut(:events="activityStore.category.top", :height="350")
         div(v-if="type == 'category_polar'")
-          aw-categorypolar(:events="activityStore.category.top")
+          aw-categorypolar(:events="activityStore.category.top", :height="350")
         div(v-if="type == 'timeline_barchart'")
           aw-timeline-barchart(:datasets="datasets", :timeperiod_start="activityStore.query_options.timeperiod.start", :timeperiod_length="activityStore.query_options.timeperiod.length", style="height: 220")
         div(v-if="type == 'sunburst_clock'")
-          aw-sunburst-clock(:date="date", :afkBucketId="activityStore.buckets.afk[0]", :windowBucketId="activityStore.buckets.window[0]")
+          aw-sunburst-clock(:date="date", :afkBucketId="activityStore.buckets.afk[0]", :windowBucketId="activityStore.buckets.window[0]", :height="350")
         div(v-if="type == 'custom_vis'")
           aw-custom-vis(:visname="props.visname" :title="props.title")
         div(v-if="type == 'vis_timeline' && isSingleDay")
@@ -237,7 +237,7 @@ div.vis-widget-card
     display: flex !important;
     align-items: center !important;
     gap: 8px !important;
-    padding-right: 90px !important;
+    padding-right: 115px !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
@@ -650,7 +650,14 @@ export default {
       const view = viewsStore.views.find(v => v.id === this.viewId);
       if (!view || !view.elements[this.id]) return 1;
       const el = view.elements[this.id];
-      return el.colSpan || (el.size === 3 ? 4 : (el.size === 2 ? 2 : 1));
+      if (el.type === 'vis_timeline') {
+        return Math.max(4, el.colSpan || 4);
+      }
+      let defaultCol = el.size === 3 ? 4 : (el.size === 2 ? 2 : 1);
+      if (el.type === 'category_doughnut' || el.type === 'category_polar') {
+        defaultCol = 2;
+      }
+      return el.colSpan || defaultCol;
     },
     rowSpan() {
       if (!this.viewId) return 1;
@@ -658,8 +665,11 @@ export default {
       const view = viewsStore.views.find(v => v.id === this.viewId);
       if (!view || !view.elements[this.id]) return 1;
       const el = view.elements[this.id];
-      // Default: timeline_barchart=2, vis_timeline=2, category_sunburst=2, others=1
-      const defaultRow = (el.type === 'timeline_barchart' || el.type === 'vis_timeline' || el.type === 'category_sunburst') ? 2 : 1;
+      if (el.type === 'timeline_barchart') {
+        return Math.max(2, el.rowSpan || 2);
+      }
+      // Default: timeline_barchart=2, vis_timeline=2, category_sunburst=2, category_doughnut=2, category_polar=2, others=1
+      const defaultRow = (el.type === 'timeline_barchart' || el.type === 'vis_timeline' || el.type === 'category_sunburst' || el.type === 'category_doughnut' || el.type === 'category_polar') ? 2 : 1;
       return el.rowSpan || defaultRow;
     },
     isVisLargeFallback() {

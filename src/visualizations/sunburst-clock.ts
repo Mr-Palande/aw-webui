@@ -22,10 +22,10 @@ import { IEvent } from '~/util/interfaces';
 import { seconds_to_duration } from '../util/time';
 import { getColorFromString } from '~/util/color';
 
-// Dimensions of sunburst.
-const width = 750;
-const height = 600;
-const radius = Math.min(width, height) / 2;
+// Dimensions of sunburst (default, will be updated dynamically).
+let chartWidth = 350;
+let chartHeight = 350;
+let chartRadius = 175;
 
 const legendData: Record<string, string> = {
   afk: getColorFromString('afk'),
@@ -49,7 +49,9 @@ function drawLegend() {
     r: 3,
   };
 
-  const legend = d3
+  rootEl.select('.legend').selectAll('*').remove();
+
+  const legend = rootEl
     .select('.legend')
     .append('svg:svg')
     .attr('width', li.w)
@@ -82,28 +84,32 @@ function drawLegend() {
     .attr('y', li.h / 2)
     .attr('dy', '0.35em')
     .attr('text-anchor', 'middle')
+    .style('font-family', "'Outfit', sans-serif")
+    .style('font-size', '0.75rem')
+    .style('font-weight', '600')
+    .style('fill', '#fff')
     .text(function (d) {
       return d.key;
     });
 }
 
-function drawClockTick(a: number) {
+function drawClockTick(a: number, outerR: number) {
   const xn = Math.cos(a);
   const yn = Math.sin(a);
 
   vis
     .append('line')
-    .attr('x1', 170 * xn)
-    .attr('y1', 170 * yn)
-    .attr('x2', 155 * xn)
-    .attr('y2', 155 * yn)
-    .style('stroke', '#CCC')
-    .style('stroke-width', 1);
+    .attr('x1', (outerR + 2) * xn)
+    .attr('y1', (outerR + 2) * yn)
+    .attr('x2', (outerR + 8) * xn)
+    .attr('y2', (outerR + 8) * yn)
+    .style('stroke', 'rgba(255, 255, 255, 0.15)')
+    .style('stroke-width', 1.5);
 }
 
-function drawClock(h: number, m: number, text?: string) {
+function drawClock(h: number, m: number, text: string | undefined, outerR: number) {
   const a = 2 * Math.PI * (h / 24 + m / 24 / 60) - (1 / 2) * Math.PI;
-  drawClockTick(a);
+  drawClockTick(a, outerR);
 
   const xn = Math.cos(a);
   const yn = Math.sin(a);
@@ -112,11 +118,12 @@ function drawClock(h: number, m: number, text?: string) {
     .append('text')
     .text(text || moment({ hours: h }).format('HH:mm'))
     .attr('text-anchor', 'middle')
-    .attr('font-size', '1.2em')
-    //.attr("font-weight", "bold")
-    .style('fill', '#999')
-    .attr('x', 130 * xn)
-    .attr('y', 5 + 140 * yn);
+    .attr('font-size', '0.78rem')
+    .style('font-family', "'Outfit', sans-serif")
+    .style('font-weight', '500')
+    .style('fill', '#888')
+    .attr('x', (outerR + 18) * xn)
+    .attr('y', 4 + (outerR + 18) * yn);
 }
 
 function mouseclick(_: Event, d: d3.HierarchyRectangularNode<IEvent>) {
@@ -153,7 +160,6 @@ function mouseover(_: Event, d: d3.HierarchyRectangularNode<IEvent>) {
   rootEl.selectAll('path').style('opacity', 0.5);
 
   // Then highlight only those that are an ancestor of the current segment.
-  // FIXME: This currently makes all other svg paths on the page faded as well
   rootEl
     .selectAll('path')
     .filter(function (node: any) {
@@ -182,29 +188,35 @@ function mouseleave() {
 }
 
 function initializeBreadcrumbTrail() {
+  d3.select('.sequence').selectAll('*').remove();
   // Add the svg area.
   const trail = d3
     .select('.sequence')
     .append('svg:svg')
-    .attr('width', width)
+    .attr('width', chartWidth)
     .attr('height', 50)
     .attr('id', 'trail');
   // Add the label at the end, for the percentage.
   trail.append('svg:text').attr('id', 'endlabel').style('fill', '#000');
 }
 
-function create(el: HTMLElement) {
+function create(el: HTMLElement, heightVal: number) {
+  chartHeight = heightVal || 350;
+  chartWidth = chartHeight;
+  chartRadius = chartHeight / 2;
+
   // Clear the svg in case we are redrawing
   rootEl = d3.select(el);
-  rootEl.selectAll('svg').remove();
+  rootEl.select('.chart').selectAll('svg').remove();
 
   vis = rootEl
+    .select('.chart')
     .append('svg:svg')
-    .attr('width', width)
-    .attr('height', height)
+    .attr('width', chartWidth)
+    .attr('height', chartHeight)
     .append('svg:g')
     .attr('id', 'container')
-    .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')') as d3.Selection<
+    .attr('transform', 'translate(' + chartWidth / 2 + ',' + chartHeight / 2 + ')') as d3.Selection<
     SVGGElement,
     unknown,
     null,
@@ -213,7 +225,7 @@ function create(el: HTMLElement) {
 
   drawLegend();
 
-  partition_layout = d3.partition<IEvent>().size([2 * Math.PI, radius * radius]);
+  partition_layout = d3.partition<IEvent>().size([2 * Math.PI, 1]);
 
   arc = d3
     .arc<ArcObject>()
@@ -224,27 +236,52 @@ function create(el: HTMLElement) {
       return d.x1;
     })
     .innerRadius(function (d: ArcObject) {
-      return Math.sqrt(d.y0);
+      const outerR = chartRadius - 35;
+      const innerR = outerR * 0.45;
+      return innerR + d.y0 * (outerR - innerR);
     })
     .outerRadius(function (d: ArcObject) {
-      return Math.sqrt(d.y1);
+      const outerR = chartRadius - 35;
+      const innerR = outerR * 0.45;
+      return innerR + d.y1 * (outerR - innerR);
     });
+}
+
+interface ClockItem {
+  h: number;
+  m: number;
+  text?: string;
+  isSpecial: boolean;
+}
+
+function getAngle(item: ClockItem) {
+  return 2 * Math.PI * (item.h / 24 + item.m / 24 / 60);
 }
 
 // Main function to draw and set up the visualization, once we have the data.
 function update(
   el: HTMLElement,
   root_event: IEvent & { children: IEvent[] },
-  startOfDay?: moment.Moment
+  startOfDay?: moment.Moment,
+  heightVal?: number
 ) {
+  if (heightVal) {
+    chartHeight = heightVal;
+    chartWidth = chartHeight;
+    chartRadius = chartHeight / 2;
+  }
+
   // Basic setup of page elements.
   initializeBreadcrumbTrail();
 
-  el.querySelector('#container').innerHTML = '';
+  const containerNode = el.querySelector('#container');
+  if (containerNode) {
+    containerNode.innerHTML = '';
+  }
 
   // Bounding circle underneath the sunburst, to make it easier to detect
   // when the mouse leaves the parent g.
-  vis.append('svg:circle').attr('r', radius).style('opacity', 0);
+  vis.append('svg:circle').attr('r', chartRadius).style('opacity', 0);
 
   // Turn the data into a d3 hierarchy and calculate the sums.
   let root: d3.HierarchyNode<IEvent> = d3.hierarchy<IEvent>(root_event);
@@ -253,15 +290,11 @@ function update(
   const mode_clock = true;
   let nodes;
   if (mode_clock) {
-    // TODO: Make this a checkbox in the UI
     const show_whole_day = true;
 
     let root_start = moment(root_event.timestamp);
     let root_end = root_start.clone().add(root_event.duration, 'seconds');
     if (show_whole_day) {
-      // Use the provided start-of-day (which respects the user's startOfDay setting)
-      // so that events between midnight and the startOfDay offset are shown correctly.
-      // Fall back to calendar midnight if no startOfDay is provided.
       if (startOfDay) {
         root_start = startOfDay.clone();
       } else {
@@ -269,21 +302,49 @@ function update(
       }
       root_end = root_start.clone().add(1, 'days');
 
-      // Draw clock ticks at standard 6-hour intervals (00, 06, 12, 18)
-      for (const h of [0, 6, 12, 18]) {
-        drawClock(h, 0);
+      // non-overlapping clock algorithm
+      const clocks: ClockItem[] = [];
+
+      const now = moment();
+      if (now.isBetween(root_start, root_end)) {
+        clocks.push({ h: now.hour(), m: now.minute(), text: 'Now', isSpecial: true });
       }
 
-      // Draw a special marker for the start-of-day boundary if it's not at midnight
       const start_hour = root_start.hours();
       const start_min = root_start.minutes();
       if (start_hour !== 0 || start_min !== 0) {
-        drawClock(start_hour, start_min, `${root_start.format('HH:mm')} ☀`);
+        clocks.push({ h: start_hour, m: start_min, text: `${root_start.format('HH:mm')} ☀`, isSpecial: true });
       }
 
-      // TODO: Draw only if showing today
-      const now = moment();
-      drawClock(now.hour(), now.minute(), 'Now');
+      const standardClocks = [
+        { h: 0, m: 0, isSpecial: false },
+        { h: 6, m: 0, isSpecial: false },
+        { h: 12, m: 0, isSpecial: false },
+        { h: 18, m: 0, isSpecial: false },
+      ];
+
+      for (const std of standardClocks) {
+        const stdAngle = getAngle(std);
+        let tooClose = false;
+        for (const spec of clocks) {
+          const specAngle = getAngle(spec);
+          let diff = Math.abs(stdAngle - specAngle) % (2 * Math.PI);
+          if (diff > Math.PI) diff = 2 * Math.PI - diff;
+          
+          if (diff < 0.39) {
+            tooClose = true;
+            break;
+          }
+        }
+        if (!tooClose) {
+          clocks.push(std);
+        }
+      }
+
+      const outerR = chartRadius - 35;
+      for (const clock of clocks) {
+        drawClock(clock.h, clock.m, clock.text, outerR);
+      }
     }
 
     nodes = root_node
@@ -313,12 +374,7 @@ function update(
     nodes = root_node.descendants();
   }
 
-  // For efficiency, filter nodes to keep only those large enough to see.
   nodes = nodes.filter(function (d: d3.HierarchyRectangularNode<IEvent>) {
-    // 0.005 radians = 0.29 degrees
-    // If show_whole_day:
-    //   0.0044 rad = 1min
-    //   0.0011 rad = 15s
     const threshold = 0.001;
     return d.x1 - d.x0 > threshold;
   });
@@ -342,12 +398,8 @@ function update(
     .on('mouseover', mouseover)
     .on('click', mouseclick);
 
-  // Add the mouseleave handler to the bounding circle.
-  d3.select('#container').on('mouseleave', mouseleave);
+  d3.select(el).select('#container').on('mouseleave', mouseleave);
 }
-
-// NOTE: The original version of this sunburst contained a buildHierarchy
-//       function that's not used in our version.
 
 export default {
   create: create,

@@ -1,10 +1,10 @@
 <template lang="pug">
-div.sunburst
+div.sunburst-container(:style="{ height: height + 'px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', width: '100%' }")
   div.sidebar
     div.legend
 
-  div.main
-    div.chart
+  div.main(:style="{ width: size + 'px', height: size + 'px', position: 'relative' }")
+    div.chart(:style="{ width: size + 'px', height: size + 'px' }")
       div.explanation
         div.base
           | {{ centerMsg }}
@@ -17,47 +17,41 @@ div.sunburst
 </template>
 
 <style scoped lang="scss">
-.sunburst {
+.sunburst-container {
   font-family: 'Open Sans', sans-serif;
   font-size: 12px;
   font-weight: 400;
   width: 100%;
-  height: 620px;
-  margin-top: 10px;
+  margin-top: 0;
+  overflow: hidden;
+  position: relative;
 
   .main {
-    width: 750px;
-    margin-right: auto;
-    margin-left: auto;
+    margin: 0 auto;
   }
 
   .sidebar {
-    float: left;
-    height: 0;
-    width: 100px;
-  }
-
-  .sequence {
-    width: 600px;
-    height: 70px;
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 100;
+    pointer-events: none;
   }
 
   .legend {
-    padding: 10px 0 0 3px;
-  }
-
-  .sequence text,
-  .legend text {
-    font-weight: 600;
-    fill: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 6px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
   }
 
   .chart {
     position: relative;
-  }
-
-  .chart path {
-    stroke: #fff;
   }
 
   .explanation {
@@ -65,7 +59,7 @@ div.sunburst
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 200px;
+    width: 150px;
     text-align: center;
     color: var(--aw-text-muted);
     z-index: 10;
@@ -73,7 +67,7 @@ div.sunburst
 
     .base {
       color: var(--aw-text-primary);
-      font-size: 1.2rem;
+      font-size: 0.9rem;
       font-weight: 600;
       font-family: 'Outfit', sans-serif;
     }
@@ -82,41 +76,41 @@ div.sunburst
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 3px;
+      gap: 2px;
 
       .date {
-        font-size: 0.8rem;
+        font-size: 0.65rem;
         color: var(--aw-text-muted);
       }
 
       .time {
-        font-size: 0.85rem;
+        font-size: 0.72rem;
         font-weight: 600;
         color: var(--aw-text-primary);
         font-family: monospace;
       }
 
       .title {
-        font-size: 1.15rem;
+        font-size: 0.8rem;
         font-weight: 700;
         color: var(--aw-text-primary);
         font-family: 'Outfit', sans-serif;
-        max-width: 190px;
+        max-width: 140px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
 
       .duration {
-        font-size: 0.85rem;
+        font-size: 0.72rem;
         color: #10b981;
         font-weight: 600;
       }
 
       .data {
-        font-size: 0.8rem;
+        font-size: 0.65rem;
         color: var(--aw-text-muted);
-        max-width: 190px;
+        max-width: 140px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -137,6 +131,7 @@ export default {
     date: { type: String },
     afkBucketId: { type: String },
     windowBucketId: { type: String },
+    height: { type: Number, default: 350 },
   },
 
   data: () => {
@@ -147,15 +142,26 @@ export default {
     };
   },
 
+  computed: {
+    size() {
+      // Return a perfect square size to fit inside card height bounds
+      return Math.max(200, this.height);
+    },
+  },
+
   watch: {
     date: function (to) {
       this.starttime = moment(to);
       this.endtime = moment(this.starttime).add(1, 'days');
       this.visualize();
     },
+    height: function (to) {
+      sunburst.create(this.$el, to);
+      this.visualize();
+    },
   },
   mounted: function () {
-    sunburst.create(this.$el);
+    sunburst.create(this.$el, this.height);
     this.starttime = moment(this.date);
     this.endtime = moment(this.date).add(1, 'days');
     this.visualize();
@@ -192,36 +198,25 @@ export default {
             const within_parent = e_start.isAfter(p_start) && e_end.isBefore(p_end);
             const after_parent = e_start.isAfter(p_end);
 
-            // TODO: This isn't correct, yet
             if (before_parent) {
-              // Child is behind parent
-              //console.log("Too far behind: " + i_child);
               i_child++;
             } else if (within_parent) {
-              //console.log("Added relation: " + i_child);
               p.children = _.concat(p.children, e);
               i_child++;
             } else if (after_parent) {
-              // Child is ahead of parent
-              //console.log("Too far ahead: " + i_child);
               break;
             } else {
-              // TODO: Split events when this happens
-              console.warn('Between parents');
               p.children = _.concat(p.children, e);
               i_child++;
             }
           }
         }
 
-        // Build the root node
-        //console.log(parents);
         const m_start = moment(_.first(parents).timestamp);
         const m_end = moment(_.tail(parents).timestamp);
         const duration = (m_end - m_start) / 1000;
         return {
           timestamp: _.first(parents).timestamp,
-          // TODO: If we want a 12/24h clock, this has to change
           duration: duration,
           data: { title: 'ROOT' },
           children: parents,
@@ -235,17 +230,15 @@ export default {
             hierarchy = buildHierarchy(events_afk, events_window);
             this.centerMsg = 'Hover to inspect';
           } else {
-            // FIXME: This should do the equivalent of "No data" when such is the case, but it doesn't.
             hierarchy = {
               timestamp: '',
-              // TODO: If we want a 12/24h clock, this has to change
               duration: 0,
               data: { title: 'ROOT' },
               children: [],
             };
             this.centerMsg = 'No data';
           }
-          sunburst.update(this.$el, hierarchy, this.starttime);
+          sunburst.update(this.$el, hierarchy, this.starttime, this.height);
         });
       });
     },

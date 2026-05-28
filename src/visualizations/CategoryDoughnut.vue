@@ -1,9 +1,9 @@
 <template lang="pug">
 div.aw-doughnut-vis
   div.d-flex.flex-column.align-items-center.justify-content-center
-    div.svg-container(style="position: relative; width: 260px; height: 260px;")
-      svg(width="260" height="260" viewBox="0 0 260 260" style="overflow: visible;")
-        g(transform="translate(130, 130)")
+    div.svg-container(:style="{ position: 'relative', width: size + 'px', height: size + 'px' }")
+      svg(:width="size" :height="size" :viewBox="'0 0 ' + size + ' ' + size" style="overflow: visible;")
+        g(:transform="'translate(' + (size / 2) + ', ' + (size / 2) + ')'")
           // Outer glow/shadow paths
           path(
             v-for="slice in slices"
@@ -30,7 +30,7 @@ div.aw-doughnut-vis
           )
           
       // Center Glassmorphic display
-      div.center-display.d-flex.flex-column.align-items-center.justify-content-center
+      div.center-display.d-flex.flex-column.align-items-center.justify-content-center(:style="centerDisplayStyle")
         span.center-label {{ hoveredLabel || 'Total Time' }}
         span.center-value {{ hoveredValue || totalDurationFormatted }}
         span.center-percent(v-if="hoveredPercent") {{ hoveredPercent }}%
@@ -66,6 +66,10 @@ export default {
       type: Array,
       default: null,
     },
+    height: {
+      type: Number,
+      default: 260,
+    },
   },
   data() {
     return {
@@ -90,12 +94,32 @@ export default {
     totalDurationFormatted() {
       return seconds_to_duration(this.totalDuration);
     },
+    size() {
+      // Fit dynamically inside card bounds
+      return Math.min(230, this.height);
+    },
+    centerDisplayStyle() {
+      const displaySize = Math.round(this.size * 0.63);
+      const offset = Math.round((this.size - displaySize) / 2);
+      return {
+        width: displaySize + 'px',
+        height: displaySize + 'px',
+        top: offset + 'px',
+        left: offset + 'px',
+        fontSize: this.size < 200 ? '0.7rem' : '0.85rem',
+      };
+    },
     slices() {
       const topCategories = this.categoryData.slice(0, 10); // Limit to top 10 categories
       if (topCategories.length === 0) return [];
 
       const pieData = d3.pie().value((d: any) => d.duration)(topCategories);
-      const arcGenerator = d3.arc().innerRadius(78).outerRadius(112).cornerRadius(4).padAngle(0.02);
+      
+      const scaleFactor = this.size / 260;
+      const innerRadius = 78 * scaleFactor;
+      const outerRadius = 112 * scaleFactor;
+      
+      const arcGenerator = d3.arc().innerRadius(innerRadius).outerRadius(outerRadius).cornerRadius(4 * scaleFactor).padAngle(0.02);
 
       const categoryStore = useCategoryStore();
       

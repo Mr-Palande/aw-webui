@@ -124,27 +124,114 @@ const customColors = {
 };
 
 export function upgradeLegacyColor(color: string): string {
-  const mapping: Record<string, string> = {
-    '#0F0': '#10b981',     // Work green -> Emerald Mint
-    '#0f0': '#10b981',
-    '#F33': '#e11d48',     // Media red -> Premium Rose/Coral
-    '#f33': '#e11d48',
-    '#F80': '#f97316',     // Games orange -> Warm Sunset
-    '#f80': '#f97316',
-    '#FCC400': '#f59e0b',  // Social yellow -> Warm Amber
-    '#fcc400': '#f59e0b',
-    '#A8FC00': '#d946ef',  // Music yellow-green -> Vibrant Fuchsia/Magenta
-    '#a8fc00': '#d946ef',
-    '#9FF': '#0ea5e9',     // Comms cyan -> Deep Sky Blue
-    '#9ff': '#0ea5e9',
-    '#CCC': '#64748b',     // Uncategorized grey -> Slate
-    '#ccc': '#64748b',
-    '#7F6': '#10b981',     // not-afk green -> Emerald Mint
-    '#7f6': '#10b981',
-    '#DD6': '#f59e0b',     // hibernating yellow -> Amber
-    '#dd6': '#f59e0b'
+  const settingsStore = useSettingsStore();
+  const scheme = settingsStore?.graphColorScheme || 'default';
+
+  const mapping: Record<string, Record<string, string>> = {
+    default: {
+      '#0F0': '#10b981',     // Work green -> Emerald Mint
+      '#0f0': '#10b981',
+      '#F33': '#e11d48',     // Media red -> Premium Rose/Coral
+      '#f33': '#e11d48',
+      '#F80': '#f97316',     // Games orange -> Warm Sunset
+      '#f80': '#f97316',
+      '#FCC400': '#f59e0b',  // Social yellow -> Warm Amber
+      '#fcc400': '#f59e0b',
+      '#A8FC00': '#d946ef',  // Music yellow-green -> Vibrant Fuchsia/Magenta
+      '#a8fc00': '#d946ef',
+      '#9FF': '#0ea5e9',     // Comms cyan -> Deep Sky Blue
+      '#9ff': '#0ea5e9',
+      '#CCC': '#64748b',     // Uncategorized grey -> Slate
+      '#ccc': '#64748b',
+      '#7F6': '#10b981',
+      '#7f6': '#10b981',
+      '#DD6': '#f59e0b',
+      '#dd6': '#f59e0b'
+    },
+    cyberneon: {
+      '#0F0': '#39ff14',     // Neon Green
+      '#0f0': '#39ff14',
+      '#F33': '#ff007f',     // Neon Pink/Rose
+      '#f33': '#ff007f',
+      '#F80': '#ff5f1f',     // Neon Orange
+      '#f80': '#ff5f1f',
+      '#FCC400': '#ffef00',  // Neon Yellow
+      '#fcc400': '#ffef00',
+      '#A8FC00': '#bf00ff',  // Neon Purple
+      '#a8fc00': '#bf00ff',
+      '#9FF': '#00f5ff',     // Neon Cyan
+      '#9ff': '#00f5ff',
+      '#CCC': '#e0b0ff',     // Neon Violet
+      '#ccc': '#e0b0ff',
+      '#7F6': '#39ff14',
+      '#7f6': '#39ff14',
+      '#DD6': '#ffef00',
+      '#dd6': '#ffef00'
+    },
+    sunset: {
+      '#0F0': '#f953c6',     // Hot Magenta
+      '#0f0': '#f953c6',
+      '#F33': '#ff4e50',     // Rose Red
+      '#f33': '#ff4e50',
+      '#F80': '#ff5e62',     // Coral Sunset
+      '#f80': '#ff5e62',
+      '#FCC400': '#f9d423',  // Sun Yellow
+      '#fcc400': '#f9d423',
+      '#A8FC00': '#e14eca',  // Sunset Violet
+      '#a8fc00': '#e14eca',
+      '#9FF': '#ff9966',     // Warm Orange
+      '#9ff': '#ff9966',
+      '#CCC': '#f857a6',     // Petal Pink
+      '#ccc': '#f857a6',
+      '#7F6': '#f953c6',
+      '#7f6': '#f953c6',
+      '#DD6': '#f9d423',
+      '#dd6': '#f9d423'
+    },
+    nordicocean: {
+      '#0F0': '#0083b0',     // Deep Aqua
+      '#0f0': '#0083b0',
+      '#F33': '#0072ff',     // Royal Blue
+      '#f33': '#0072ff',
+      '#F80': '#203a43',     // Teal Slate
+      '#f80': '#203a43',
+      '#FCC400': '#3a7bd5',  // Ocean Blue
+      '#fcc400': '#3a7bd5',
+      '#A8FC00': '#2c5364',  // Deep Teal
+      '#a8fc00': '#2c5364',
+      '#9FF': '#00b4db',     // Ice Blue
+      '#9ff': '#00b4db',
+      '#CCC': '#00c6ff',     // Sky Blue
+      '#ccc': '#00c6ff',
+      '#7F6': '#0083b0',
+      '#7f6': '#0083b0',
+      '#DD6': '#3a7bd5',
+      '#dd6': '#3a75d5'
+    },
+    forest: {
+      '#0F0': '#38ef7d',     // Emerald Grass
+      '#0f0': '#38ef7d',
+      '#F33': '#56ab2f',     // Olive/Leaf
+      '#f33': '#56ab2f',
+      '#F80': '#134e5e',     // Pine Blue
+      '#f80': '#134e5e',
+      '#FCC400': '#96c93d',  // Lime Gold
+      '#fcc400': '#96c93d',
+      '#A8FC00': '#00b09b',  // Jade
+      '#a8fc00': '#00b09b',
+      '#9FF': '#71b280',     // Soft Sage
+      '#9ff': '#71b280',
+      '#CCC': '#11998e',     // Teal/Mint
+      '#ccc': '#11998e',
+      '#7F6': '#38ef7d',
+      '#7f6': '#38ef7d',
+      '#DD6': '#96c93d',
+      '#dd6': '#96c93d'
+    }
   };
-  return mapping[color] || color;
+
+  const activeMapping = mapping[scheme] || mapping.default;
+  return activeMapping[color] || color;
 }
 
 function hashcode(str: string): number {
@@ -163,9 +250,23 @@ function hashcode(str: string): number {
 export function getColorFromString(appname: string): string {
   appname = appname || '';
   appname = appname.toLowerCase();
+  
+  // Custom status color mapping matching the active palette dynamically!
   if (customColors[appname]) {
+    const settingsStore = useSettingsStore();
+    const scheme = settingsStore?.graphColorScheme || 'default';
+    if (appname === 'afk') {
+      return scheme === 'cyberneon' ? '#1f51ff' : (scheme === 'nordicocean' ? '#0f2027' : '#334155');
+    }
+    if (appname === 'not-afk') {
+      return scheme === 'cyberneon' ? '#39ff14' : (scheme === 'nordicocean' ? '#00b4db' : '#10b981');
+    }
+    if (appname === 'hibernating') {
+      return scheme === 'cyberneon' ? '#ffef00' : (scheme === 'nordicocean' ? '#2c5364' : '#f59e0b');
+    }
     return customColors[appname];
   }
+  
   const palette = getPalette();
   const dynamicScale = d3.scaleOrdinal(palette);
   dynamicScale.domain('0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20'.split(/, /));

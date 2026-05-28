@@ -31,7 +31,7 @@ div(v-if="view" style="position: relative;")
     div.grid-bg-cell(v-for="n in 24" :key="n")
 
   draggable.aw-grid-dashboard(v-model="elements" handle=".handle" :disabled="!editing")
-    div.grid-item-wrapper(v-for="el, index in elements", :key="index", :style="getVisStyle(el)")
+    div.grid-item-wrapper(v-for="el, index in elements", :key="index + '-' + el.type + '-' + graphColorScheme", :style="getVisStyle(el)")
       aw-selectable-vis(
         :id="index"
         :type="el.type"
@@ -71,7 +71,7 @@ div(v-if="view" style="position: relative;")
       div.grid-picker-container.mb-3
         div.grid-picker-label.d-flex.justify-content-between.small.text-muted.mb-2
           span Cells:
-          span.font-weight-bold(style="font-family: monospace; color: #10b981; font-size: 0.85rem;") {{ hoverColSpan || activeSettingsEl.colSpan }}w × {{ hoverRowSpan || activeSettingsEl.rowSpan }}h
+          span.font-weight-bold(style="font-family: monospace; color: #10b981; font-size: 0.85rem;") {{ activeColSpan() }}w × {{ activeRowSpan() }}h
 
         div.grid-picker-cells
           div(v-for="r in 4" :key="r" style="display: flex; gap: 4px; margin-bottom: 4px;")
@@ -118,6 +118,7 @@ import draggable from 'vuedraggable';
 
 import { useViewsStore } from '~/stores/views';
 import { useActivityStore } from '~/stores/activity';
+import { useSettingsStore } from '~/stores/settings';
 
 export default {
   name: 'ActivityView',
@@ -168,6 +169,9 @@ export default {
   },
   computed: {
     ...mapState(useViewsStore, ['views']),
+    graphColorScheme() {
+      return useSettingsStore().graphColorScheme;
+    },
     view: function () {
       if (this.view_id == 'default') {
         return this.views[0];
@@ -335,13 +339,25 @@ export default {
       };
     },
     getVisStyle(el) {
-      const colSpan = el.colSpan || (el.size === 3 ? 4 : (el.size === 2 ? 2 : 1));
-      // Default rowSpan: timeline_barchart=2, vis_timeline/category_sunburst=2, others=1
+      let defaultColSpan = el.size === 3 ? 4 : (el.size === 2 ? 2 : 1);
+      if (el.type === 'vis_timeline') {
+        defaultColSpan = 4;
+      } else if (el.type === 'category_doughnut' || el.type === 'category_polar') {
+        defaultColSpan = 2;
+      }
+      let colSpan = el.colSpan || defaultColSpan;
+      if (el.type === 'vis_timeline') {
+        colSpan = Math.max(4, colSpan);
+      }
+
       let defaultRowSpan = 1;
-      if (el.type === 'timeline_barchart' || el.type === 'vis_timeline' || el.type === 'category_sunburst') {
+      if (el.type === 'timeline_barchart' || el.type === 'vis_timeline' || el.type === 'category_sunburst' || el.type === 'category_doughnut' || el.type === 'category_polar') {
         defaultRowSpan = 2;
       }
-      const rowSpan = el.rowSpan || defaultRowSpan;
+      let rowSpan = el.rowSpan || defaultRowSpan;
+      if (el.type === 'timeline_barchart') {
+        rowSpan = Math.max(2, rowSpan);
+      }
 
       return {
         gridColumn: `span ${colSpan}`,
@@ -381,6 +397,18 @@ export default {
       window.addEventListener('mouseup', onUp);
     },
     setGridSpan(index: number, c: number, r: number) {
+      const el = this.elements[index];
+      if (el.type === 'vis_timeline') {
+        c = Math.max(4, c);
+      }
+      if (el.type === 'timeline_barchart') {
+        r = Math.max(2, r);
+      }
+      if (el.type === 'category_sunburst' || el.type === 'sunburst_clock') {
+        c = Math.max(3, c);
+        r = Math.max(3, r);
+      }
+
       useViewsStore().changeElementGrid({
         view_id: this.view.id,
         el_id: index,
@@ -399,12 +427,48 @@ export default {
         this.activeSettingsEl.rowSpan = r;
       }
     },
+    activeColSpan() {
+      if (!this.activeSettingsEl) return 0;
+      let c = this.hoverColSpan || this.activeSettingsEl.colSpan;
+      if (this.activeSettingsEl.type === 'vis_timeline') {
+        c = Math.max(4, c);
+      }
+      if (this.activeSettingsEl.type === 'category_sunburst' || this.activeSettingsEl.type === 'sunburst_clock') {
+        c = Math.max(3, c);
+      }
+      return c;
+    },
+    activeRowSpan() {
+      if (!this.activeSettingsEl) return 0;
+      let r = this.hoverRowSpan || this.activeSettingsEl.rowSpan;
+      if (this.activeSettingsEl.type === 'timeline_barchart') {
+        r = Math.max(2, r);
+      }
+      if (this.activeSettingsEl.type === 'category_sunburst' || this.activeSettingsEl.type === 'sunburst_clock') {
+        r = Math.max(3, r);
+      }
+      return r;
+    },
     getGridCellClass(c: number, r: number) {
       if (!this.activeSettingsEl) return {};
-      const activeC = this.hoverColSpan || this.activeSettingsEl.colSpan;
-      const activeR = this.hoverRowSpan || this.activeSettingsEl.rowSpan;
+      const activeC = this.activeColSpan();
+      const activeR = this.activeRowSpan();
       const isSelectedOrHovered = c <= activeC && r <= activeR;
-      const isCurrentSelection = c <= this.activeSettingsEl.colSpan && r <= this.activeSettingsEl.rowSpan;
+
+      let currentC = this.activeSettingsEl.colSpan;
+      let currentR = this.activeSettingsEl.rowSpan;
+      if (this.activeSettingsEl.type === 'vis_timeline') {
+        currentC = Math.max(4, currentC);
+      }
+      if (this.activeSettingsEl.type === 'timeline_barchart') {
+        currentR = Math.max(2, currentR);
+      }
+      if (this.activeSettingsEl.type === 'category_sunburst' || this.activeSettingsEl.type === 'sunburst_clock') {
+        currentC = Math.max(3, currentC);
+        currentR = Math.max(3, currentR);
+      }
+
+      const isCurrentSelection = c <= currentC && r <= currentR;
       return {
         'grid-picker-cell-active': isSelectedOrHovered,
         'grid-picker-cell-current': isCurrentSelection,
