@@ -63,4 +63,6 @@ If you want to make further visual tweaks or changes to the source code:
 
 ## 📄 License
 
-This project is licensed under the same terms as the original ActivityWatch Web UI. See the `LICENSE`[https://github.com/activitywatch/aw-webui?tab=MPL-2.0-1-ov-file] file for details.
+This project is licensed under the same terms as the original ActivityWatch Web UI ([MPL-2.0][license-link]). See the `LICENSE` file for details.
+
+[license-link]: https://github.com/activitywatch/aw-webui?tab=MPL-2.0-1-ov-file
