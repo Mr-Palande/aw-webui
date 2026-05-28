@@ -1,7 +1,7 @@
 <template lang="pug">
 div(v-if="datasets && datasets.length > 0")
   // Height set here to avoid elements jumping when loading Activity view
-  bar(:chart-data="chartData" :chart-options="chartOptions" :height="330")
+  bar(:chart-data="chartData" :chart-options="chartOptions" :height="height")
 div.small(v-else-if="datasets === null", style="font-size: 16pt; color: #aaa;")
   | No data
 div.small(v-else, style="font-size: 16pt; color: #aaa;")
@@ -56,6 +56,10 @@ export default {
       type: Array,
       default: () => [1, 'day'],
     },
+    height: {
+      type: Number,
+      default: 330,
+    },
   },
   computed: {
     labels() {
@@ -97,13 +101,13 @@ export default {
           display: true,
           text: 'Timeline',
         },
-        responsive: true,
-        maintainAspectRatio: false,
       };
     },
     chartOptions(): ChartOptions {
       const resolution = this.timeperiod_length[1];
       return {
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           tooltip: {
             mode: 'point',

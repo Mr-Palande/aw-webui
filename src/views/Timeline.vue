@@ -403,6 +403,8 @@ export default {
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 16px;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+  position: relative;
+  z-index: 101; /* Ensure filters stack above timeline chart below */
 }
 
 .info-capsule {

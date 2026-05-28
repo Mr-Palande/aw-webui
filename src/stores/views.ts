@@ -23,7 +23,7 @@ const desktopViews: View[] = [
     id: 'summary',
     name: 'Summary',
     elements: [
-      { type: 'timeline_barchart', size: 3 },
+      { type: 'timeline_barchart', size: 3, colSpan: 4, rowSpan: 2 },
       { type: 'category_doughnut', size: 2 },
       { type: 'category_polar', size: 2 },
       { type: 'top_apps', size: 2 },
@@ -63,7 +63,7 @@ const androidViews = [
     id: 'summary',
     name: 'Summary',
     elements: [
-      { type: 'timeline_barchart', size: 3 },
+      { type: 'timeline_barchart', size: 3, colSpan: 4, rowSpan: 2 },
       { type: 'category_doughnut', size: 2 },
       { type: 'category_polar', size: 2 },
       { type: 'top_apps', size: 2 },

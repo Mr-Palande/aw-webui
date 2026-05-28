@@ -30,19 +30,7 @@ div
           select(id="mode", v-model="mode", @change="valueChanged")
             option(value='last_duration') Last duration
             option(value='range') Date range
-      tr(v-if="mode == 'last_duration'")
-        th.pr-2
-          label(for="duration") Show last:
-        td
-          select(id="duration", v-model="duration", @change="valueChanged")
-            option(:value="15*60") 15min
-            option(:value="30*60") 30min
-            option(:value="60*60") 1h
-            option(:value="2*60*60") 2h
-            option(:value="4*60*60") 4h
-            option(:value="6*60*60") 6h
-            option(:value="12*60*60") 12h
-            option(:value="24*60*60") 24h
+
       tr(v-if="mode == 'range'")
         th.pr-2 Range:
         td

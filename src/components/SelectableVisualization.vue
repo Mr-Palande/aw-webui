@@ -7,93 +7,17 @@ div.vis-widget-card
   h5
     icon.handle(name="bars" v-if="editable" style="opacity: 0.6; cursor: grab;")
     | {{ visualizations[type].title }}
-  div.vis-style-dropdown-btn
-    b-button.p-0.mr-2(v-if="has_prerequisites" size="sm" variant="outline-secondary" @click="isFocused = true" title="Focus view & details")
-      icon(name="expand")
-    
-  div.vis-style-dropdown-btn
-    b-button.p-0.mr-2(v-if="has_prerequisites" size="sm" variant="outline-secondary" @click="isFocused = true" title="Focus view & details")
-      icon(name="expand")
-    
-    b-dropdown.mr-1(v-if="editable" size="sm" variant="outline-secondary" right no-caret menu-class="aw-settings-dropdown-menu")
-      template(v-slot:button-content)
-        icon(name="cog")
-      
-      div.px-3.py-2(style="width: 280px; background: rgba(18, 18, 18, 0.96); border-radius: 16px; border: 1.5px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); color: var(--aw-text-primary); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);")
-        h6.font-weight-bold.mb-2(style="font-family: 'Outfit', sans-serif; font-size: 0.85rem; color: var(--aw-text-primary); display: flex; align-items: center; gap: 6px;")
-          icon(name="th-large" style="color: #10b981; font-size: 0.85rem;")
-          | Snap Grid Squares
-        
-        // Interactive 4x4 Grid Squares Picker
-        div.grid-picker-container.mb-3
-          div.grid-picker-label.d-flex.justify-content-between.small.text-muted.mb-2
-            span Size in cells:
-            span.font-weight-bold(style="font-family: monospace; color: #10b981; font-size: 0.85rem;") {{ hoverColSpan || colSpan }}w × {{ hoverRowSpan || rowSpan }}h
-          
-          div.grid-picker-cells(style="display: flex; flex-direction: column; background: rgba(0, 0, 0, 0.25); padding: 8px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); align-items: center;")
-            div(v-for="r in 4" :key="r" style="display: flex; gap: 4px; margin-bottom: 4px;")
-              div.grid-picker-cell(
-                v-for="c in 4"
-                :key="c"
-                @mouseenter="hoverColSpan = c; hoverRowSpan = r"
-                @mouseleave="hoverColSpan = 0; hoverRowSpan = 0"
-                @click="setGridSpan(c, r)"
-                :class="getGridCellClass(c, r)"
-              )
-        
-        div.dropdown-divider(style="border-top: 1px solid rgba(255,255,255,0.08); margin: 10px 0;")
-        
-        h6.font-weight-bold.mb-2(style="font-family: 'Outfit', sans-serif; font-size: 0.85rem; color: var(--aw-text-primary); display: flex; align-items: center; gap: 6px;")
-          icon(name="arrows-alt" style="color: #3b82f6; font-size: 0.85rem;")
-          | Custom Dimensions
-        
-        // Min Width Selection
-        div.mb-2
-          div.small.text-muted.mb-1 Min Width (Responsive):
-          div.d-flex.flex-wrap(style="gap: 4px;")
-            b-button(
-              v-for="w in [200, 280, 350, 500]"
-              :key="w"
-              size="sm"
-              variant="outline-secondary"
-              @click="setMinDimension('minWidth', w)"
-              :class="{ active: (elMinWidth || 280) === w }"
-              style="padding: 2px 6px; font-size: 0.72rem; border-radius: 6px; flex: 1 0 20%;"
-            ) {{ w }}px
-        
-        // Min Height Selection
-        div.mb-2
-          div.small.text-muted.mb-1 Min Height:
-          div.d-flex.flex-wrap(style="gap: 4px;")
-            b-button(
-              v-for="h in [200, 260, 320, 400]"
-              :key="h"
-              size="sm"
-              variant="outline-secondary"
-              @click="setMinDimension('minHeight', h)"
-              :class="{ active: (elMinHeight || 260) === h }"
-              style="padding: 2px 6px; font-size: 0.72rem; border-radius: 6px; flex: 1 0 20%;"
-            ) {{ h }}px
-            
-        div.dropdown-divider(style="border-top: 1px solid rgba(255,255,255,0.08); margin: 10px 0;")
-        
-        h6.font-weight-bold.mb-2(style="font-family: 'Outfit', sans-serif; font-size: 0.85rem; color: var(--aw-text-primary); display: flex; align-items: center; gap: 6px;")
-          icon(name="chart-bar" style="color: #06b6d4; font-size: 0.85rem;")
-          | Widget Type
-        
-        div(style="max-height: 150px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; background: rgba(0,0,0,0.3); padding: 2px;")
-          div.vis-type-item(
-            v-for="t in types"
-            :key="t"
-            @click="$emit('onTypeChange', id, t)"
-            :class="{ active: type === t }"
-            style="padding: 6px 10px; font-size: 0.78rem; font-weight: 500; border-radius: 6px; cursor: pointer; color: var(--aw-text-secondary); transition: all 0.2s ease;"
-          )
-            | {{ visualizations[t].title }}
-            span.small.ml-1(v-if="!visualizations[t].available" style="color: rgba(245, 158, 11, 0.7); font-size: 0.65rem;") [no data]
 
-    b-button.p-0(v-if="editable" size="sm", variant="outline-danger" @click="$emit('onRemove', id)")
+  div.vis-style-dropdown-btn
+    b-button.p-0.mr-2(v-if="has_prerequisites" size="sm" variant="outline-secondary" @click="isFocused = true" title="Focus view & details")
+      icon(name="expand")
+
+    b-button.p-0.mr-1(v-if="editable" size="sm" variant="outline-secondary" @click="$emit('openSettings', { index: id, type: type, colSpan: colSpan, rowSpan: rowSpan, rect: $event.currentTarget.getBoundingClientRect() })" title="Widget settings")
+      icon(name="cog")
+
+    b-button.p-0(v-if="editable" size="sm" variant="outline-danger" @click="$emit('onRemove', id)")
       icon(name="times")
+
 
   div(v-if="!supports_period")
     b-alert.small.px-2.py-1(show variant="warning")
@@ -156,19 +80,19 @@ div.vis-widget-card
                  with_limit)
     div(v-if="type == 'category_tree'")
       aw-categorytree(:events="activityStore.category.top")
-    div(v-if="type == 'category_sunburst'")
-      aw-sunburst-categories(:data="top_categories_hierarchy", style="height: 20em")
-    div(v-if="type == 'category_doughnut'")
+    div(v-if="type == 'category_sunburst'" :style="{ height: visHeight + 'px' }")
+      aw-sunburst-categories(:data="top_categories_hierarchy", :style="{ height: visHeight + 'px' }")
+    div(v-if="type == 'category_doughnut'" :style="{ height: visHeight + 'px' }")
       aw-categorydoughnut(:events="activityStore.category.top")
-    div(v-if="type == 'category_polar'")
+    div(v-if="type == 'category_polar'" :style="{ height: visHeight + 'px' }")
       aw-categorypolar(:events="activityStore.category.top")
-    div(v-if="type == 'timeline_barchart'")
-      aw-timeline-barchart(:datasets="datasets", :timeperiod_start="activityStore.query_options.timeperiod.start", :timeperiod_length="activityStore.query_options.timeperiod.length", style="height: 100")
-    div(v-if="type == 'sunburst_clock'")
+    div(v-if="type == 'timeline_barchart'" :style="{ height: visHeight + 'px' }")
+      aw-timeline-barchart(:datasets="datasets", :timeperiod_start="activityStore.query_options.timeperiod.start", :timeperiod_length="activityStore.query_options.timeperiod.length", :height="visHeight")
+    div(v-if="type == 'sunburst_clock'" :style="{ height: visHeight + 'px' }")
       aw-sunburst-clock(:date="date", :afkBucketId="activityStore.buckets.afk[0]", :windowBucketId="activityStore.buckets.window[0]")
     div(v-if="type == 'custom_vis'")
       aw-custom-vis(:visname="props.visname" :title="props.title")
-    div(v-if="type == 'vis_timeline' && isSingleDay")
+    div(v-if="type == 'vis_timeline' && isSingleDay" :style="{ height: visHeight + 'px' }")
       vis-timeline(:buckets="timeline_buckets", :showRowLabels='true', :queriedInterval="timeline_daterange")
     div(v-if="type == 'score'")
       aw-score()
@@ -294,9 +218,11 @@ div.vis-widget-card
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   position: relative !important;
   height: 100% !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
 
   &:hover {
-    transform: translateY(-2px) !important;
     background: rgba(255, 255, 255, 0.04) !important;
     border-color: rgba(255, 255, 255, 0.12) !important;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.08) !important;
@@ -305,9 +231,9 @@ div.vis-widget-card
   h5 {
     font-family: 'Outfit', sans-serif !important;
     font-weight: 700 !important;
-    font-size: 1.1rem !important;
+    font-size: 1rem !important;
     color: var(--aw-text-primary) !important;
-    margin-bottom: 1.2rem !important;
+    margin-bottom: 0.8rem !important;
     display: flex !important;
     align-items: center !important;
     gap: 8px !important;
@@ -315,6 +241,14 @@ div.vis-widget-card
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
+    flex-shrink: 0 !important;
+  }
+
+  // Content area fills remaining space
+  > div:not(.resize-handle):not(.vis-style-dropdown-btn) {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
   }
 
   // Hoverable Right Resize Handle
@@ -364,8 +298,8 @@ div.vis-widget-card
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 32px !important;
-    height: 32px !important;
+    width: 28px !important;
+    height: 28px !important;
     border-radius: 50% !important;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
     box-shadow: none !important;
@@ -376,22 +310,10 @@ div.vis-widget-card
     }
   }
 
-  /* Custom styling for remove/danger button inside dropdown menu wrapper */
-  .btn-remove-widget {
-    color: rgba(239, 68, 68, 0.8) !important;
+  .btn-outline-danger {
     &:hover {
       color: #ef4444 !important;
       background: rgba(239, 68, 68, 0.12) !important;
-    }
-  }
-}
-
-.vis-header-drag {
-  &.editable-handle {
-    cursor: grab !important;
-    
-    &:active {
-      cursor: grabbing !important;
     }
   }
 }
@@ -428,54 +350,6 @@ div.vis-widget-card
 ::v-deep .modal-body {
   padding: 2rem !important;
   background: transparent !important;
-}
-
-/* Custom visual squares picker styling */
-.grid-picker-cell {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  border: 1.5px dashed rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.02);
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &.grid-picker-cell-current {
-    border-color: rgba(16, 185, 129, 0.35);
-    background: rgba(16, 185, 129, 0.08);
-  }
-
-  &.grid-picker-cell-active {
-    border-style: solid;
-    border-color: #10b981 !important;
-    background: rgba(16, 185, 129, 0.5) !important;
-    box-shadow: 0 0 10px rgba(16, 185, 129, 0.45);
-  }
-
-  &:hover {
-    transform: scale(1.08);
-  }
-}
-
-.vis-type-item {
-  &:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--aw-text-primary) !important;
-  }
-  
-  &.active {
-    background: rgba(6, 182, 212, 0.15) !important;
-    color: #06b6d4 !important;
-    font-weight: 700 !important;
-  }
-}
-
-/* Make sure dropdown menu styling has a premium obsidian glass look */
-::v-deep .aw-settings-dropdown-menu {
-  background: transparent !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  padding: 0 !important;
 }
 
 /* Custom scrollbars inside the detailed table */
@@ -545,9 +419,6 @@ export default {
       activityStore: useActivityStore(),
       categoryStore: useCategoryStore(),
       isFocused: false,
-      hoverColSpan: 0,
-      hoverRowSpan: 0,
-
       types: [
         'top_apps',
         'top_titles',
@@ -787,7 +658,9 @@ export default {
       const view = viewsStore.views.find(v => v.id === this.viewId);
       if (!view || !view.elements[this.id]) return 1;
       const el = view.elements[this.id];
-      return el.rowSpan || (el.type === 'vis_timeline' || el.type === 'category_sunburst' ? 2 : 1);
+      // Default: timeline_barchart=2, vis_timeline=2, category_sunburst=2, others=1
+      const defaultRow = (el.type === 'timeline_barchart' || el.type === 'vis_timeline' || el.type === 'category_sunburst') ? 2 : 1;
+      return el.rowSpan || defaultRow;
     },
     isVisLargeFallback() {
       return this.type === 'sunburst_clock' || this.type === 'vis_timeline';
@@ -858,22 +731,7 @@ export default {
       });
       useViewsStore().save();
     },
-    setGridSpan(c: number, r: number) {
-      if (!this.viewId) return;
-      useViewsStore().changeElementGrid({
-        view_id: this.viewId,
-        el_id: this.id,
-        prop: 'colSpan',
-        value: c,
-      });
-      useViewsStore().changeElementGrid({
-        view_id: this.viewId,
-        el_id: this.id,
-        prop: 'rowSpan',
-        value: r,
-      });
-      useViewsStore().save();
-    },
+
     setMinDimension(prop: 'minWidth' | 'minHeight', value: number) {
       if (!this.viewId) return;
       useViewsStore().changeElementMinDimensions({
@@ -883,16 +741,7 @@ export default {
       });
       useViewsStore().save();
     },
-    getGridCellClass(c: number, r: number) {
-      const activeC = this.hoverColSpan || this.colSpan;
-      const activeR = this.hoverRowSpan || this.rowSpan;
-      const isSelectedOrHovered = c <= activeC && r <= activeR;
-      const isCurrentSelection = c <= this.colSpan && r <= this.rowSpan;
-      return {
-        'grid-picker-cell-active': isSelectedOrHovered,
-        'grid-picker-cell-current': isCurrentSelection,
-      };
-    },
+
     changeSize(size) {
       if (!this.viewId) return;
       useViewsStore().changeElementSize({
@@ -943,6 +792,7 @@ export default {
         })
       );
     },
+
   },
 };
 </script>
