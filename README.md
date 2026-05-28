@@ -5,6 +5,7 @@ This is a customized version of the ActivityWatch Web UI dashboard. It features 
 ActivityWatch is a privacy-first, open-source automated time tracker.
 
 ---
+##Email Your Ideas To MrPalande993@gmail.com
 
 ## 🚀 How to Apply This Custom UI (For Users)(btw if u using portable version just replace the files inside statics with new one)
 
@@ -63,6 +64,8 @@ If you want to make further visual tweaks or changes to the source code:
 
 ## 📄 License
 
-This project is licensed under the same terms as the original ActivityWatch Web UI ([MPL-2.0][license-link]). See the `LICENSE` file for details.
+This project is licensed under the same terms as the original ActivityWatch Web UI ([MPL-2.0]. See the `LICENSE` file for details.
 
-[license-link]: https://github.com/activitywatch/aw-webui?tab=MPL-2.0-1-ov-file
+
+
+
