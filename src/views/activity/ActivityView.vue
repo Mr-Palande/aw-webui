@@ -1,34 +1,43 @@
 <template lang="pug">
-div(v-if="view")
-  draggable.row(v-model="elements" handle=".handle")
-    // TODO: Handle large/variable sized visualizations better
-    div.col-md-6.col-lg-4.p-3(v-for="el, index in elements", :key="index", :class="{'col-md-12': isVisLarge(el), 'col-lg-12': isVisLarge(el)}")
+div(v-if="view" style="position: relative;")
+  // Layout Lock / Unlock Dashboard Control Bar
+  div.dashboard-control-bar.d-flex.justify-content-between.align-items-center.mb-3.p-3(style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 16px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);")
+    div.d-flex.align-items-center
+      h4.m-0.font-weight-bold(style="font-family: 'Outfit', sans-serif; color: var(--aw-text-primary); font-size: 1.25rem;") Dashboard: {{ view.name }}
+      span.badge.ml-2(:class="editing ? 'badge-warning' : 'badge-success'" style="font-size: 0.75rem; padding: 4px 8px; border-radius: 6px;")
+        | {{ editing ? '🔓 Move & Customize Mode' : '🔒 Fixed & Locked' }}
+    
+    div.d-flex(style="gap: 8px;")
+      template(v-if="editing")
+        b-button(variant="success" size="sm" @click="save(); editing = false" style="border-radius: 8px; display: flex; align-items: center; gap: 6px;")
+          icon(name="save")
+          span Save & Lock
+        b-button(variant="outline-secondary" size="sm" @click="discard(); editing = false" style="border-radius: 8px; display: flex; align-items: center; gap: 6px;")
+          icon(name="times")
+          span Cancel
+        b-button(variant="outline-warning" size="sm" @click="restoreDefaults()" style="border-radius: 8px; display: flex; align-items: center; gap: 6px;")
+          icon(name="undo")
+          span Defaults
+        b-button(variant="outline-danger" size="sm" @click="remove()" style="border-radius: 8px; display: flex; align-items: center; gap: 6px;")
+          icon(name="trash")
+          span Delete View
+      template(v-else)
+        b-button(variant="outline-primary" size="sm" @click="editing = true" style="border-radius: 8px; display: flex; align-items: center; gap: 6px; border-color: rgba(6, 182, 212, 0.4); color: #06b6d4;")
+          icon(name="lock-open")
+          span Move & Customize
+
+  // Technical Blueprint Snapping Grid Backdrop
+  div.grid-background(v-if="editing")
+    div.grid-bg-cell(v-for="n in 24" :key="n")
+
+  draggable.aw-grid-dashboard(v-model="elements" handle=".vis-header-drag" :disabled="!editing")
+    div.p-2(v-for="el, index in elements", :key="index", :style="getVisStyle(el)")
       aw-selectable-vis(:id="index" :type="el.type" :props="el.props" :view-id="view.id" @onTypeChange="onTypeChange" @onRemove="onRemove" :editable="editing")
 
-    div.col-md-6.col-lg-4.p-3(v-if="editing")
-      b-button(@click="addVisualization" variant="outline-dark" block size="lg")
-        icon(name="plus")
-        span Add visualization
-
-  div(v-if="editing").mt-2
-    div.d-flex.flex-row-reverse
-      b-button(variant="outline-dark" @click="discard(); editing = !editing;")
-        icon(name="times")
-        span Cancel
-      b-button.mr-2(variant="success" @click="save(); editing = !editing;")
-        icon(name="save")
-        span Save
-    div.mt-2.d-flex.flex-row-reverse
-      b-button(variant="warning" size="sm" @click="restoreDefaults();")
-        icon(name="undo")
-        span Restore defaults
-      b-button.mr-2(variant="danger" size="sm" @click="remove();")
-        icon(name="trash")
-        span Remove
-  div(v-else).d-flex.flex-row-reverse.mt-2
-    b-button(variant="outline-dark" size="sm" @click="editing = !editing")
-      icon(name="edit")
-      span Edit view
+    div.p-2(v-if="editing" style="grid-column: span 1; grid-row: span 1;")
+      b-button.h-100.w-100.d-flex.flex-column.align-items-center.justify-content-center.p-4(@click="addVisualization" variant="outline-secondary" style="border: 2px dashed rgba(255,255,255,0.15); border-radius: 16px; background: rgba(255,255,255,0.01); min-height: 240px; color: var(--aw-text-muted);")
+        icon(name="plus" style="font-size: 1.5rem; margin-bottom: 8px;")
+        span.font-weight-bold Add visualization
 </template>
 
 <script lang="ts">
@@ -36,6 +45,8 @@ import 'vue-awesome/icons/save';
 import 'vue-awesome/icons/times';
 import 'vue-awesome/icons/trash';
 import 'vue-awesome/icons/undo';
+import 'vue-awesome/icons/lock';
+import 'vue-awesome/icons/lock-open';
 
 import { mapState } from 'pinia';
 import draggable from 'vuedraggable';
@@ -122,6 +133,86 @@ export default {
     isVisLarge(el) {
       return el.type == 'sunburst_clock' || el.type == 'vis_timeline';
     },
+    getVisClass(el) {
+      const size = el.size !== undefined ? el.size : (this.isVisLarge(el) ? 3 : 1);
+      return {
+        'col-md-6 col-lg-4': size === 1,
+        'col-md-6 col-lg-6': size === 2,
+        'col-md-12 col-lg-12': size === 3,
+      };
+    },
+    getVisStyle(el) {
+      const colSpan = el.colSpan || (el.size === 3 ? 4 : (el.size === 2 ? 2 : 1));
+      const rowSpan = el.rowSpan || (el.type === 'vis_timeline' || el.type === 'category_sunburst' ? 2 : 1);
+      
+      const minWidth = el.minWidth ? `${el.minWidth}px` : '100%';
+      const minHeight = el.minHeight ? `${el.minHeight}px` : '260px';
+      
+      return {
+        gridColumn: `span ${colSpan}`,
+        gridRow: `span ${rowSpan}`,
+        height: '100%',
+        minWidth: minWidth,
+        minHeight: minHeight,
+        maxWidth: '100%',
+      };
+    },
   },
 };
 </script>
+
+<style lang="scss" scoped>
+.aw-grid-dashboard {
+  position: relative !important;
+  z-index: 2 !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  grid-auto-rows: minmax(260px, auto) !important;
+  gap: 1rem !important;
+  padding: 0.5rem 0 !important;
+  width: 100% !important;
+
+  &::before, &::after {
+    display: none !important;
+  }
+
+  @media (max-width: 991.98px) {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  @media (max-width: 575.98px) {
+    grid-template-columns: repeat(1, 1fr) !important;
+  }
+}
+
+.grid-background {
+  position: absolute;
+  top: 0.5rem;
+  left: 0;
+  right: 0;
+  bottom: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: minmax(260px, auto);
+  gap: 1rem;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.25;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  @media (max-width: 991.98px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 575.98px) {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+.grid-bg-cell {
+  border: 1.5px dashed rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.005);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.3);
+}
+</style>

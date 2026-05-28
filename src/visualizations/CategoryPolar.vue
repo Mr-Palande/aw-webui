@@ -1,6 +1,6 @@
 <template lang="pug">
 div.aw-polar-vis
-  div.d-flex.flex-column.flex-md-row.align-items-center.justify-content-center
+  div.d-flex.flex-column.align-items-center.justify-content-center
     div.svg-container(style="position: relative; width: 260px; height: 260px;")
       svg(width="260" height="260" viewBox="0 0 260 260" style="overflow: visible;")
         g(transform="translate(130, 130)")
@@ -41,7 +41,7 @@ div.aw-polar-vis
         span.center-percent(v-if="hoveredPercent") {{ hoveredPercent }}%
 
     // Legends container
-    div.legends-container.ml-md-4.mt-3.mt-md-0.w-100(style="max-width: 320px;")
+    div.legends-container.mt-3.w-100(style="max-width: 100%;")
       div.legend-item(
         v-for="slice in slices"
         :key="'legend-' + slice.id"
@@ -245,5 +245,7 @@ export default {
   color: var(--aw-text-primary);
   font-weight: 600;
   font-family: monospace;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 </style>

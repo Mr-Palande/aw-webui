@@ -31,9 +31,10 @@ function set_status(container: HTMLElement, msg: string) {
     .attr('x', '0px')
     .attr('y', '25px')
     .text(msg)
-    .attr('font-family', 'sans-serif')
-    .attr('font-size', '20px')
-    .attr('fill', '#999');
+    .attr('font-family', "'Outfit', 'Inter', sans-serif")
+    .attr('font-size', '16px')
+    .attr('font-weight', '500')
+    .attr('fill', 'var(--aw-text-muted)');
 }
 
 interface Entry {
@@ -69,8 +70,8 @@ function update(container: HTMLElement, apps: Entry[]) {
 
     // Variables
     const width = (app.duration / longest_duration) * 100 + '%';
-    const barHeight = 46;
-    const textSize = 14;
+    const textSize = 13;
+    const itemHeight = 36;
 
     let appcolor: string;
     if (Array.isArray(app.colorKey)) {
@@ -80,7 +81,7 @@ function update(container: HTMLElement, apps: Entry[]) {
       appcolor = app.color || getCategoryColorFromString(app.colorKey || app.name);
     }
 
-    const hovercolor = Color(appcolor).darken(0.1).hex();
+    const hovercolor = Color(appcolor).lighten(0.15).hex();
 
     // Add a parent <a> element if link is set
     const a = app.link ? svg.append('a').attr('href', app.link) : svg;
@@ -89,46 +90,61 @@ function update(container: HTMLElement, apps: Entry[]) {
     const eg = a.append('g');
     eg.attr('id', 'summary_' + i)
       .on('mouseover', function () {
-        eg.select('rect').style('fill', hovercolor);
+        eg.select('.progress-fill').style('fill', hovercolor);
       })
       .on('mouseout', function () {
-        eg.select('rect').style('fill', appcolor);
+        eg.select('.progress-fill').style('fill', appcolor);
       });
 
     eg.append('title').text(app.hovertext + '\n' + seconds_to_duration(app.duration));
 
-    // Color box background
+    // Sleek background track capsule (full width)
     eg.append('rect')
       .attr('x', 0)
-      .attr('y', curr_y)
-      .attr('rx', 5)
-      .attr('ry', 5)
+      .attr('y', curr_y + 24)
+      .attr('rx', 4)
+      .attr('ry', 4)
+      .attr('width', '100%')
+      .attr('height', 8)
+      .style('fill', 'rgba(255, 255, 255, 0.05)');
+
+    // Colored progress capsule fill (variable width)
+    eg.append('rect')
+      .attr('class', 'progress-fill')
+      .attr('x', 0)
+      .attr('y', curr_y + 24)
+      .attr('rx', 4)
+      .attr('ry', 4)
       .attr('width', width)
-      .attr('height', barHeight)
-      .style('fill', appcolor);
+      .attr('height', 8)
+      .style('fill', appcolor)
+      .style('transition', 'fill 0.2s ease');
 
-    // App name
-    const displayName = app.name && app.name.length > 55 ? app.name.slice(0, 52) + '...' : app.name;
+    // App name (Left aligned)
+    const displayName = app.name && app.name.length > 32 ? app.name.slice(0, 29) + '...' : app.name;
     eg.append('text')
-      .attr('x', 5)
-      .attr('y', curr_y + 1.4 * textSize)
+      .attr('x', 0)
+      .attr('y', curr_y + 14)
       .text(displayName)
-      .attr('font-family', 'sans-serif')
+      .attr('font-family', "'Outfit', 'Inter', 'Segoe UI', sans-serif")
       .attr('font-size', textSize + 'px')
-      .attr('fill', textColor);
+      .attr('font-weight', '600')
+      .attr('fill', 'var(--aw-text-primary)');
 
-    // Duration
+    // Duration (Right aligned at 100%)
     eg.append('text')
-      .attr('x', 5)
-      .attr('y', curr_y + 2.6 * textSize)
+      .attr('x', '100%')
+      .attr('y', curr_y + 14)
+      .attr('text-anchor', 'end')
       .text(seconds_to_duration(app.duration))
-      .attr('font-family', 'sans-serif')
-      .attr('font-size', textSize - 3 + 'px')
-      .attr('fill', '#444');
+      .attr('font-family', "'Outfit', 'Inter', monospace, sans-serif")
+      .attr('font-size', textSize - 1 + 'px')
+      .attr('font-weight', '500')
+      .attr('fill', 'var(--aw-text-muted)');
 
-    curr_y += barHeight + 5;
+    curr_y += itemHeight + 10;
   });
-  curr_y -= 5;
+  curr_y -= 10;
 
   svg.attr('height', curr_y);
 

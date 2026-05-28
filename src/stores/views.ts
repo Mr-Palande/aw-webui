@@ -4,6 +4,11 @@ import { useSettingsStore } from './settings';
 interface IElement {
   type: string;
   size?: number;
+  width?: number;
+  colSpan?: number;
+  rowSpan?: number;
+  minWidth?: number;
+  minHeight?: number;
   props?: Record<string, unknown>;
 }
 
@@ -18,40 +23,37 @@ const desktopViews: View[] = [
     id: 'summary',
     name: 'Summary',
     elements: [
-      { type: 'top_apps', size: 3 },
-      { type: 'top_titles', size: 3 },
       { type: 'timeline_barchart', size: 3 },
-      { type: 'top_categories', size: 3 },
-      { type: 'category_tree', size: 3 },
-      { type: 'category_sunburst', size: 3 },
-      { type: 'category_doughnut', size: 3 },
-      { type: 'category_polar', size: 3 },
+      { type: 'category_doughnut', size: 2 },
+      { type: 'category_polar', size: 2 },
+      { type: 'top_apps', size: 2 },
+      { type: 'top_categories', size: 2 },
     ],
   },
   {
     id: 'window',
     name: 'Window',
     elements: [
-      { type: 'top_apps', size: 3 },
-      { type: 'top_titles', size: 3 },
+      { type: 'top_apps', size: 2 },
+      { type: 'top_titles', size: 2 },
     ],
   },
   {
     id: 'browser',
     name: 'Browser',
     elements: [
-      { type: 'top_domains', size: 3 },
-      { type: 'top_urls', size: 3 },
-      { type: 'top_browser_titles', size: 3 },
+      { type: 'top_domains', size: 2 },
+      { type: 'top_urls', size: 2 },
+      { type: 'top_browser_titles', size: 2 },
     ],
   },
   {
     id: 'editor',
     name: 'Editor',
     elements: [
-      { type: 'top_editor_files', size: 3 },
-      { type: 'top_editor_projects', size: 3 },
-      { type: 'top_editor_languages', size: 3 },
+      { type: 'top_editor_files', size: 2 },
+      { type: 'top_editor_projects', size: 2 },
+      { type: 'top_editor_languages', size: 2 },
     ],
   },
 ];
@@ -61,13 +63,11 @@ const androidViews = [
     id: 'summary',
     name: 'Summary',
     elements: [
-      { type: 'top_apps', size: 3 },
-      { type: 'top_categories', size: 3 },
       { type: 'timeline_barchart', size: 3 },
-      { type: 'category_tree', size: 3 },
-      { type: 'category_sunburst', size: 3 },
-      { type: 'category_doughnut', size: 3 },
-      { type: 'category_polar', size: 3 },
+      { type: 'category_doughnut', size: 2 },
+      { type: 'category_polar', size: 2 },
+      { type: 'top_apps', size: 2 },
+      { type: 'top_categories', size: 2 },
     ],
   },
 ];
@@ -99,8 +99,18 @@ export const useViewsStore = defineStore('views', {
       await this.load();
     },
     loadViews(views: View[]) {
-      this.$patch({ views });
-      console.log('Loaded views:', this.views);
+      const migrated = (views || []).map(v => ({
+        ...v,
+        elements: (v.elements || []).map(el => {
+          // If the element has size 3 and is not a timeline or clock chronogram, migrate it to size 2 to show 2-in-a-line!
+          if (el.size === 3 && el.type !== 'timeline_barchart' && el.type !== 'vis_timeline' && el.type !== 'sunburst_clock') {
+            return { ...el, size: 2 };
+          }
+          return el;
+        })
+      }));
+      this.$patch({ views: migrated });
+      console.log('Loaded and migrated views:', this.views);
     },
     clearViews(this: State) {
       this.views = [];
@@ -138,6 +148,58 @@ export const useViewsStore = defineStore('views', {
     },
     removeVisualization(this: State, { view_id, el_id }) {
       this.views.find(v => v.id == view_id).elements.splice(el_id, 1);
+    },
+    changeElementSize(
+      this: State,
+      { view_id, el_id, size }: { view_id: string; el_id: number; size: number }
+    ) {
+      const view = this.views.find(v => v.id == view_id);
+      if (view && view.elements[el_id]) {
+        const updated = { ...view.elements[el_id], size };
+        view.elements.splice(el_id, 1, updated);
+      }
+    },
+    changeElementWidth(
+      this: State,
+      { view_id, el_id, width }: { view_id: string; el_id: number; width: number }
+    ) {
+      const view = this.views.find(v => v.id == view_id);
+      if (view && view.elements[el_id]) {
+        const updated = { ...view.elements[el_id], width };
+        view.elements.splice(el_id, 1, updated);
+      }
+    },
+    changeElementGrid(
+      this: State,
+      {
+        view_id,
+        el_id,
+        prop,
+        value,
+      }: { view_id: string; el_id: number; prop: 'colSpan' | 'rowSpan'; value: number }
+    ) {
+      const view = this.views.find(v => v.id == view_id);
+      if (view && view.elements[el_id]) {
+        const updated = { ...view.elements[el_id], [prop]: value };
+        view.elements.splice(el_id, 1, updated);
+      }
+    },
+    changeElementMinDimensions(
+      this: State,
+      {
+        view_id,
+        el_id,
+        minWidth,
+        minHeight,
+      }: { view_id: string; el_id: number; minWidth?: number; minHeight?: number }
+    ) {
+      const view = this.views.find(v => v.id == view_id);
+      if (view && view.elements[el_id]) {
+        const updated = { ...view.elements[el_id] };
+        if (minWidth !== undefined) updated.minWidth = minWidth;
+        if (minHeight !== undefined) updated.minHeight = minHeight;
+        view.elements.splice(el_id, 1, updated);
+      }
     },
   },
 });

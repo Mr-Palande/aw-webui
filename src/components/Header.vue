@@ -3,22 +3,30 @@ div(:class="{'fixed-top-padding': fixedTopMenu}")
   b-navbar.aw-navbar(toggleable="lg" :fixed="fixedTopMenu ? 'top' : null")
     // Brand on mobile
     b-navbar-nav.d-block.d-lg-none
-      b-navbar-brand(to="/" style="background-color: transparent;")
-        img.align-middle(src="/logo.png" style="height: 1.5em; transition: transform 0.3s ease;")
-        span.ml-2.align-middle(style="font-size: 1.1em; color: var(--aw-text-primary); font-weight: 800; letter-spacing: -0.02em;") ActivityWatch
+      b-navbar-brand(to="/" style="background-color: transparent; display: flex; align-items: center;")
+        svg.align-middle.brand-svg-logo(width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="height: 1.5em; transition: transform 0.3s ease;")
+          defs
+            linearGradient#brandGrad(x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse")
+              stop(offset="0%" stop-color="#10b981")
+              stop(offset="100%" stop-color="#34d399")
+          path(d="M16 2L28 9V23L16 30L4 23V9L16 2Z" stroke="url(#brandGrad)" stroke-width="2.5" fill="rgba(16, 185, 129, 0.05)")
+          path(d="M11 9H21V11.5L16 16.5L21 21.5V24H11V21.5L16 16.5L11 11.5V9Z" fill="url(#brandGrad)")
+          circle(cx="16" cy="12" r="1.5" fill="#ffffff")
+          circle(cx="16" cy="21" r="1.5" fill="#ffffff")
+        span.ml-2.align-middle(style="font-size: 1.1rem; color: var(--aw-text-primary); font-weight: 800; letter-spacing: -0.02em; display: inline-flex; align-items: center;") ActivityWatch
 
     b-navbar-toggle(target="nav-collapse")
 
     b-collapse#nav-collapse(is-nav)
       b-navbar-nav
         // If only a single view (the default) is available
-        b-nav-item(v-if="activityViews && activityViews.length === 1", v-for="view in activityViews", :key="view.name", :to="view.pathUrl")
+        b-nav-item.nav-activity(v-if="activityViews && activityViews.length === 1", v-for="view in activityViews", :key="view.name", :to="view.pathUrl")
           div.px-2.px-lg-1
             icon(name="calendar-day")
             | Activity
 
         // If multiple (or no) activity views are available
-        b-nav-item-dropdown(v-if="!activityViews || activityViews.length !== 1")
+        b-nav-item-dropdown.nav-activity(v-if="!activityViews || activityViews.length !== 1", :active="$route.path.startsWith('/activity')")
           template(slot="button-content")
             div.d-inline.px-2.px-lg-1
               icon(name="calendar-day")
@@ -34,12 +42,12 @@ div(:class="{'fixed-top-padding': fixedTopMenu}")
             icon(:name="view.icon")
             | {{ view.name }}
 
-        b-nav-item(to="/timeline")
+        b-nav-item.nav-timeline(to="/timeline")
           div.px-2.px-lg-1
             icon(name="stream")
             | Timeline
 
-        b-nav-item(to="/stopwatch")
+        b-nav-item.nav-stopwatch(to="/stopwatch")
           div.px-2.px-lg-1
             icon(name="stopwatch")
             | Stopwatch
@@ -47,11 +55,19 @@ div(:class="{'fixed-top-padding': fixedTopMenu}")
       // Brand on large screens (centered)
       b-navbar-nav.abs-center.d-none.d-lg-block
         b-navbar-brand(to="/" style="background-color: transparent; display: flex; align-items: center;")
-          img.ml-0.align-middle(src="/logo.png" style="height: 1.5em; transition: transform 0.3s ease;")
-          span.ml-2.align-middle(style="font-size: 1.15em; color: var(--aw-text-primary); font-weight: 800; letter-spacing: -0.02em;") ActivityWatch
+          svg.align-middle.brand-svg-logo.mr-2(width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="height: 1.6em; transition: transform 0.3s ease;")
+            defs
+              linearGradient#brandGradDesktop(x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse")
+                stop(offset="0%" stop-color="#10b981")
+                stop(offset="100%" stop-color="#34d399")
+            path(d="M16 2L28 9V23L16 30L4 23V9L16 2Z" stroke="url(#brandGradDesktop)" stroke-width="2.5" fill="rgba(16, 185, 129, 0.05)")
+            path(d="M11 9H21V11.5L16 16.5L21 21.5V24H11V21.5L16 16.5L11 11.5V9Z" fill="url(#brandGradDesktop)")
+            circle(cx="16" cy="12" r="1.5" fill="#ffffff")
+            circle(cx="16" cy="21" r="1.5" fill="#ffffff")
+          span.ml-0.align-middle(style="font-size: 1.15em; color: var(--aw-text-primary); font-weight: 800; letter-spacing: -0.02em; display: inline-flex; align-items: center;") ActivityWatch
 
       b-navbar-nav.ml-auto
-        b-nav-item-dropdown
+        b-nav-item-dropdown.nav-tools(:active="isToolsActive")
           template(slot="button-content")
             div.d-inline.px-2.px-lg-1
               icon(name="tools")
@@ -82,11 +98,11 @@ div(:class="{'fixed-top-padding': fixedTopMenu}")
             icon(name="project-diagram")
             | Graph
 
-        b-nav-item(to="/buckets")
+        b-nav-item.nav-buckets(to="/buckets")
           div.px-2.px-lg-1
             icon(name="database")
             | Raw Data
-        b-nav-item(to="/settings")
+        b-nav-item.nav-settings(to="/settings")
           div.px-2.px-lg-1
             icon(name="cog")
             | Settings
@@ -136,6 +152,36 @@ export default {
   },
   computed: {
     ...mapState(useSettingsStore, ['devmode']),
+    isToolsActive() {
+      const paths = ['/search', '/work-report', '/trends', '/report', '/alerts', '/timespiral', '/query', '/graph'];
+      return paths.some(p => this.$route.path.startsWith(p));
+    },
+    currentPageName() {
+      const path = this.$route.path;
+      if (path.startsWith('/activity/')) {
+        const parts = path.split('/');
+        const host = parts[2] || '';
+        return host ? `Activity (${host})` : 'Activity';
+      }
+      if (path === '/timeline') return 'Timeline';
+      if (path === '/stopwatch') return 'Stopwatch';
+      if (path.startsWith('/buckets')) return 'Raw Data';
+      if (path.startsWith('/settings')) {
+        if (path.includes('category-builder')) return 'Category Builder';
+        return 'Settings';
+      }
+      if (path === '/search') return 'Search';
+      if (path === '/work-report') return 'Work Report';
+      if (path === '/trends') return 'Trends';
+      if (path === '/report') return 'Report';
+      if (path === '/alerts') return 'Alerts';
+      if (path === '/timespiral') return 'Timespiral';
+      if (path === '/query') return 'Query Explorer';
+      if (path === '/graph') return 'Graph';
+      if (path === '/dev') return 'Dev';
+      if (path === '/home') return 'Home';
+      return '';
+    },
   },
   mounted: async function () {
     const bucketStore = useBucketsStore();
@@ -219,10 +265,11 @@ export default {
     color: var(--aw-text-secondary) !important;
     font-weight: 600;
     font-size: 0.95rem;
-    padding: 0.5rem 1rem !important;
+    padding: 0.5rem 1.1rem 0.65rem 1.1rem !important;
     display: flex !important;
     align-items: center;
     gap: 6px;
+    position: relative !important;
     transition: all 0.25s ease;
     
     .fa-icon {
@@ -230,26 +277,48 @@ export default {
       opacity: 0.7;
       transition: transform 0.25s ease, opacity 0.25s ease;
     }
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 10%;
+      width: 80%;
+      height: 3px;
+      border-radius: 99px;
+      background: transparent;
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease;
+    }
   }
 
-  /* Vibrant Colorful Hover & Active States */
+  /* Vibrant Colorful Underline Hover & Active States */
   
   /* 1. Activity (Green/Emerald) */
   &:hover, &.show, &:has([href*="activity"]), &.active {
-    background-color: rgba(16, 185, 129, 0.08) !important;
+    background-color: transparent !important;
     .nav-link {
       color: #10b981 !important;
       .fa-icon { opacity: 1; transform: translateY(-1px) scale(1.05); }
+      &::after {
+        background: #10b981 !important;
+        transform: scaleX(1) !important;
+      }
     }
   }
   
   /* 2. Timeline (Violet/Purple) */
   &:has([href*="timeline"]) {
     &:hover, &.active {
-      background-color: rgba(139, 92, 246, 0.08) !important;
+      background-color: transparent !important;
       .nav-link {
         color: #8b5cf6 !important;
         .fa-icon { opacity: 1; transform: translateY(-1px) scale(1.05); }
+        &::after {
+          background: #8b5cf6 !important;
+          transform: scaleX(1) !important;
+        }
       }
     }
   }
@@ -257,10 +326,14 @@ export default {
   /* 3. Stopwatch (Pink/Rose) */
   &:has([href*="stopwatch"]) {
     &:hover, &.active {
-      background-color: rgba(236, 72, 153, 0.08) !important;
+      background-color: transparent !important;
       .nav-link {
         color: #ec4899 !important;
         .fa-icon { opacity: 1; transform: translateY(-1px) scale(1.05); }
+        &::after {
+          background: #ec4899 !important;
+          transform: scaleX(1) !important;
+        }
       }
     }
   }
@@ -268,10 +341,14 @@ export default {
   /* 4. Tools (Cyan/Info) */
   &.dropdown {
     &:hover, &.show {
-      background-color: rgba(6, 182, 212, 0.08) !important;
+      background-color: transparent !important;
       .nav-link {
         color: #06b6d4 !important;
         .fa-icon { opacity: 1; transform: translateY(-1px) scale(1.05); }
+        &::after {
+          background: #06b6d4 !important;
+          transform: scaleX(1) !important;
+        }
       }
     }
   }
@@ -279,10 +356,14 @@ export default {
   /* 5. Raw Data (Amber/Orange) */
   &:has([href*="buckets"]) {
     &:hover, &.active {
-      background-color: rgba(245, 158, 11, 0.08) !important;
+      background-color: transparent !important;
       .nav-link {
         color: #f59e0b !important;
         .fa-icon { opacity: 1; transform: translateY(-1px) scale(1.05); }
+        &::after {
+          background: #f59e0b !important;
+          transform: scaleX(1) !important;
+        }
       }
     }
   }
@@ -290,17 +371,21 @@ export default {
   /* 6. Settings (Blue) */
   &:has([href*="settings"]) {
     &:hover, &.active {
-      background-color: rgba(59, 130, 246, 0.08) !important;
+      background-color: transparent !important;
       .nav-link {
         color: #3b82f6 !important;
         .fa-icon { opacity: 1; transform: translateY(-1px) scale(1.05); }
+        &::after {
+          background: #3b82f6 !important;
+          transform: scaleX(1) !important;
+        }
       }
     }
   }
 }
 
 .navbar-brand:hover {
-  img {
+  .brand-svg-logo {
     transform: rotate(10deg) scale(1.05);
   }
 }
@@ -313,6 +398,19 @@ export default {
 
 .fixed-top-padding {
   padding-bottom: 3.5em;
+}
+
+/* Page name transition */
+.fade-enter-active, .fade-leave-active {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.fade-enter {
+  opacity: 0;
+  transform: translateX(-4px);
+}
+.fade-leave-to {
+  opacity: 0;
+  transform: translateX(4px);
 }
 </style>
 

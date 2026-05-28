@@ -62,38 +62,64 @@ div.sunburst
 
   .explanation {
     position: absolute;
-    top: 260px;
-    left: 305px;
-    width: 140px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
     text-align: center;
-    color: #666;
-    z-index: 10; // might not be needed
+    color: var(--aw-text-muted);
+    z-index: 10;
+    pointer-events: none;
 
     .base {
-      color: #ddd;
-      font-size: 2em;
+      color: var(--aw-text-primary);
+      font-size: 1.2rem;
+      font-weight: 600;
+      font-family: 'Outfit', sans-serif;
     }
 
     .hover {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+
       .date {
-        font-size: 0.8em;
+        font-size: 0.8rem;
+        color: var(--aw-text-muted);
       }
 
       .time {
-        font-size: 1em;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--aw-text-primary);
+        font-family: monospace;
       }
 
       .title {
-        font-size: 2em;
-        font-weight: bold;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--aw-text-primary);
+        font-family: 'Outfit', sans-serif;
+        max-width: 190px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .duration {
-        font-size: 1em;
+        font-size: 0.85rem;
+        color: #10b981;
+        font-weight: 600;
       }
 
       .data {
-        font-size: 1em;
+        font-size: 0.8rem;
+        color: var(--aw-text-muted);
+        max-width: 190px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
     }
   }

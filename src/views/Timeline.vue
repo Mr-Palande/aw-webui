@@ -5,80 +5,89 @@ div
   input-timeinterval(v-model="daterange", :defaultDuration="timeintervalDefaultDuration", :maxDuration="maxDuration").mb-3
 
   // blocks
-  div.d-inline-block.border.rounded.p-2.mr-2
-    | Events shown:  {{ num_events }}
-  div.d-inline-block.border.rounded.p-2.mr-2
-    | Swimlanes:
-    select(v-model="swimlane")
-      option(:value='null') None
-      option(value='category') Categories
-      option(value='bucketType') Bucket Specific
-  details.d-inline-block.bg-light.small.border.rounded.mr-2.px-2
-    summary.p-2
-      b Filters: {{ filter_summary }}
-    div.p-2.bg-light
-      table
-        tr
-          th.pt-2.pr-3
-            label Host:
-          td
-              select(v-model="filter_hostname")
-                option(:value='null') All
-                option(v-for="host in hosts", :value="host") {{ host }}
-        tr
-          th.pt-2.pr-3
-            label Client:
-          td
-            select(v-model="filter_client")
-              option(:value='null') All
-              option(v-for="client in clients", :value="client") {{ client }}
-        tr
-          th.pt-2.pr-3
-            label AFK:
-          td
-            b-form-checkbox(v-model="filter_afk" size="sm" switch)
-              | Filter AFK
-        tr
-          th.pt-2.pr-3
-            label Merge:
-          td
-            b-form-checkbox(v-model="filter_merge_similar" size="sm" switch)
-              | Merge by app
-        tr
-          th.pt-2.pr-3
-            label Categories:
-          td
-            select(@change="onCategorySelect($event)", :value="''")
-              option(value="" disabled) {{ filter_categories.length > 0 ? 'Add category...' : 'All' }}
-              option(v-for="cat in category_options", :key="cat.text", :value="cat.text") {{ cat.text }}
-            div.mt-1(v-if="filter_categories.length > 0")
-              span.badge.badge-info.mr-1(v-for="(cat, idx) in filter_categories", :key="idx")
-                | {{ cat.join(' > ') }}
-                button.ml-1.close.small(@click="removeCategory(idx)", type="button", style="font-size: 0.8rem") &times;
-  div.d-inline-block.border.rounded.p-2.mr-2(v-if="num_events !== 0")
-    | Events shown: {{ num_events }}
-  b-alert.d-inline-block.p-2.mb-0.mt-2(v-if="num_events === 0", variant="warning", show)
-    | No events match selected criteria. Timeline is not updated.
-  div.float-right.small.text-muted.pt-3
-        tr
-          th.pt-2.pr-3
-            label Duration:
-          td
-            select(v-model="filter_duration")
-              option(:value='null') All
-              option(:value='2') 2+ secs
-              option(:value='5') 5+ secs
-              option(:value='10') 10+ secs
-              option(:value='30') 30+ sec
-              option(:value='1 * 60') 1+ mins
-              option(:value='2 * 60') 2+ mins
-              option(:value='3 * 60') 3+ mins
-              option(:value='10 * 60') 10+ mins
-              option(:value='30 * 60') 30+ mins
-              option(:value='1 * 60 * 60') 1+ hrs
-              option(:value='2 * 60 * 60') 2+ hrs
-  div(style="float: right; color: #999").d-inline-block.pt-3
-    | Scroll to zoom, swipe/horizontal-scroll to pan, arrow keys to navigate
+  div.timeline-action-bar.p-3.mb-4
+    div.d-flex.flex-wrap.align-items-center.justify-content-between.gap-3
+      // Left Group: Info & Swimlanes
+      div.d-flex.flex-wrap.align-items-center.gap-2
+        div.info-capsule
+          icon.mr-1(name="calendar-check")
+          | Events shown: {{ num_events }}
+        
+        div.control-capsule.d-flex.align-items-center
+          span.mr-2.small.text-muted.font-weight-bold Swimlanes:
+          b-select(v-model="swimlane" size="sm" style="width: auto; min-width: 140px;")
+            option(:value='null') None
+            option(value='category') Categories
+            option(value='bucketType') Bucket Specific
+
+      // Right Group: Advanced Filters Panel & Duration Filters
+      div.d-flex.flex-wrap.align-items-center.gap-2.ml-md-auto
+        // Duration dropdown styled inside capsule
+        div.control-capsule.d-flex.align-items-center
+          span.mr-2.small.text-muted.font-weight-bold Min Duration:
+          b-select(v-model="filter_duration" size="sm" style="width: auto; min-width: 120px;")
+            option(:value='null') All
+            option(:value='2') 2+ secs
+            option(:value='5') 5+ secs
+            option(:value='10') 10+ secs
+            option(:value='30') 30+ sec
+            option(:value='1 * 60') 1+ mins
+            option(:value='2 * 60') 2+ mins
+            option(:value='3 * 60') 3+ mins
+            option(:value='10 * 60') 10+ mins
+            option(:value='30 * 60') 30+ mins
+            option(:value='1 * 60 * 60') 1+ hrs
+            option(:value='2 * 60 * 60') 2+ hrs
+
+        // Advanced Filter Dropdown Overlay
+        details.details-filter-panel
+          summary.filter-summary-btn.d-flex.align-items-center
+            icon.mr-1(name="filter")
+            span.font-weight-bold Filters: {{ filter_summary }}
+          
+          div.filter-dropdown-card.p-3
+            h6.mb-2.small.text-muted.font-weight-bold Advanced Filter Configurations
+            div.filter-grid
+              div.filter-field
+                label Host
+                b-select(v-model="filter_hostname" size="sm")
+                  option(:value='null') All
+                  option(v-for="host in hosts", :value="host") {{ host }}
+              
+              div.filter-field.mt-2
+                label Client
+                b-select(v-model="filter_client" size="sm")
+                  option(:value='null') All
+                  option(v-for="client in clients", :value="client") {{ client }}
+
+              div.filter-field.mt-2.d-flex.justify-content-between.align-items-center
+                span.small.font-weight-bold Filter AFK:
+                b-form-checkbox(v-model="filter_afk" size="sm" switch)
+              
+              div.filter-field.mt-2.d-flex.justify-content-between.align-items-center
+                span.small.font-weight-bold Merge by App:
+                b-form-checkbox(v-model="filter_merge_similar" size="sm" switch)
+
+              div.filter-field.mt-3
+                label Categories
+                b-select(@change="onCategorySelect($event)", :value="''" size="sm")
+                  option(value="" disabled) {{ filter_categories.length > 0 ? 'Add category...' : 'All' }}
+                  option(v-for="cat in category_options", :key="cat.text", :value="cat.text") {{ cat.text }}
+                
+                div.mt-2.d-flex.flex-wrap.gap-1(v-if="filter_categories.length > 0")
+                  span.badge.badge-info.mr-1.p-1.d-flex.align-items-center(v-for="(cat, idx) in filter_categories", :key="idx")
+                    | {{ cat.join(' > ') }}
+                    span.ml-1.close-btn(@click="removeCategory(idx)" style="cursor: pointer; font-weight: bold;") &times;
+
+  // Warning for empty results
+  b-alert.mb-3(v-if="num_events === 0", variant="warning", show)
+    | No events match the selected criteria. The timeline remains fixed on the previous query.
+
+  // Action hint label
+  div.d-flex.justify-content-between.align-items-center.mb-3.px-1
+    span.small.text-muted
+      icon.mr-1(name="info-circle")
+      | Use scroll to zoom, click-drag to pan, or arrow keys to navigate the timeline grid.
 
   div(v-if="buckets !== null")
     div(style="clear: both")
@@ -101,6 +110,9 @@ import { useCategoryStore } from '~/stores/categories';
 import { matchString } from '~/util/classes';
 import { getCategorizationStringFromEvent } from '~/util/color';
 import { seconds_to_duration } from '~/util/time';
+import 'vue-awesome/icons/calendar-check';
+import 'vue-awesome/icons/filter';
+import 'vue-awesome/icons/info-circle';
 
 export default {
   name: 'Timeline',
@@ -383,19 +395,112 @@ export default {
 };
 </script>
 
-<style scoped>
-details {
+<style scoped lang="scss">
+.timeline-action-bar {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+}
+
+.info-capsule {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 6px 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--aw-text-primary);
+  display: flex;
+  align-items: center;
+}
+
+.control-capsule {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 4px 10px;
+  display: flex;
+  align-items: center;
+}
+
+.details-filter-panel {
   position: relative;
 }
 
-details[open] summary ~ * {
+.filter-summary-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  color: var(--aw-text-primary);
+  cursor: pointer;
+  list-style: none;
+  transition: all 0.2s;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+}
+
+.filter-dropdown-card {
   visibility: visible;
   position: absolute;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  left: 0;
-  top: 2.7em;
-  background: white;
+  right: 0;
+  top: 2.9rem;
+  width: 280px;
+  background: #0b0f19;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   z-index: 100;
 }
+
+.filter-field {
+  label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--aw-text-muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+}
+
+.close-btn {
+  font-size: 1.15rem;
+  color: #fff;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.aw-loading {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  text-align: center;
+  margin-top: 3rem;
+  color: var(--aw-text-muted);
+  animation: pulse 1.8s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; filter: drop-shadow(0 0 2px rgba(255,255,255,0)); }
+  50% { opacity: 1; filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.3)); }
+}
+
+.gap-1 { gap: 0.25rem !important; }
+.gap-2 { gap: 0.5rem !important; }
+.gap-3 { gap: 1rem !important; }
 </style>
