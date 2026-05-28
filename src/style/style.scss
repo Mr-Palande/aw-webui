@@ -118,6 +118,11 @@ select {
   }
 }
 
+option {
+  background-color: var(--aw-input-bg) !important;
+  color: var(--aw-text-primary) !important;
+}
+
 /* Custom Checkbox Design */
 .custom-control-input:checked ~ .custom-control-label::before {
   background: var(--aw-primary-gradient) !important;
