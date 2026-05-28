@@ -5,7 +5,7 @@ This is a customized version of the ActivityWatch Web UI dashboard. It features 
 ActivityWatch is a privacy-first, open-source automated time tracker.
 
 ---
-##Email Your Ideas To MrPalande993@gmail.com
+## Email Your Ideas To MrPalande993@gmail.com
 
 ## 🚀 How to Apply This Custom UI (For Users)(btw if u using portable version just replace the files inside statics with new one)
 
