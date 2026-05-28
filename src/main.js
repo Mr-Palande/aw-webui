@@ -62,6 +62,8 @@ Vue.component('aw-timeline-barchart', () => import('./visualizations/TimelineBar
 Vue.component('aw-calendar', () => import('./visualizations/Calendar.vue'));
 Vue.component('aw-custom-vis', () => import('./visualizations/CustomVisualization.vue'));
 Vue.component('aw-score', () => import('./visualizations/Score.vue'));
+Vue.component('aw-categorydoughnut', () => import('./visualizations/CategoryDoughnut.vue'));
+Vue.component('aw-categorypolar', () => import('./visualizations/CategoryPolar.vue'));
 
 // A mixin to make async method errors propagate
 import asyncErrorCapturedMixin from './mixins/asyncErrorCaptured.js';

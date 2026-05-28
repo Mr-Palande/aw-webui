@@ -92,12 +92,6 @@ div(:class="{'fixed-top-padding': fixedTopMenu}")
             | Settings
 </template>
 
-<style lang="scss" scoped>
-.fixed-top-padding {
-  padding-bottom: 3.5em;
-}
-</style>
-
 <script lang="ts">
 // only import the icons you use to reduce bundle size
 import 'vue-awesome/icons/calendar-day';
@@ -197,6 +191,8 @@ export default {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0.6rem 1.5rem;
+  position: relative;
+  z-index: 1030 !important;
   
   &:not(.fixed-top) {
     margin: 1.25rem auto 0.75rem auto;
@@ -221,7 +217,7 @@ export default {
 
   .nav-link {
     color: var(--aw-text-secondary) !important;
-    font-weight: 500;
+    font-weight: 600;
     font-size: 0.95rem;
     padding: 0.5rem 1rem !important;
     display: flex !important;
@@ -236,15 +232,68 @@ export default {
     }
   }
 
-  &:hover, &.active, &.show {
-    background-color: var(--aw-accent-light) !important;
-    
+  /* Vibrant Colorful Hover & Active States */
+  
+  /* 1. Activity (Green/Emerald) */
+  &:hover, &.show, &:has([href*="activity"]), &.active {
+    background-color: rgba(16, 185, 129, 0.08) !important;
     .nav-link {
-      color: var(--aw-accent-color) !important;
-      
-      .fa-icon {
-        opacity: 1;
-        transform: translateY(-1px) scale(1.05);
+      color: #10b981 !important;
+      .fa-icon { opacity: 1; transform: translateY(-1px) scale(1.05); }
+    }
+  }
+  
+  /* 2. Timeline (Violet/Purple) */
+  &:has([href*="timeline"]) {
+    &:hover, &.active {
+      background-color: rgba(139, 92, 246, 0.08) !important;
+      .nav-link {
+        color: #8b5cf6 !important;
+        .fa-icon { opacity: 1; transform: translateY(-1px) scale(1.05); }
+      }
+    }
+  }
+
+  /* 3. Stopwatch (Pink/Rose) */
+  &:has([href*="stopwatch"]) {
+    &:hover, &.active {
+      background-color: rgba(236, 72, 153, 0.08) !important;
+      .nav-link {
+        color: #ec4899 !important;
+        .fa-icon { opacity: 1; transform: translateY(-1px) scale(1.05); }
+      }
+    }
+  }
+
+  /* 4. Tools (Cyan/Info) */
+  &.dropdown {
+    &:hover, &.show {
+      background-color: rgba(6, 182, 212, 0.08) !important;
+      .nav-link {
+        color: #06b6d4 !important;
+        .fa-icon { opacity: 1; transform: translateY(-1px) scale(1.05); }
+      }
+    }
+  }
+
+  /* 5. Raw Data (Amber/Orange) */
+  &:has([href*="buckets"]) {
+    &:hover, &.active {
+      background-color: rgba(245, 158, 11, 0.08) !important;
+      .nav-link {
+        color: #f59e0b !important;
+        .fa-icon { opacity: 1; transform: translateY(-1px) scale(1.05); }
+      }
+    }
+  }
+
+  /* 6. Settings (Blue) */
+  &:has([href*="settings"]) {
+    &:hover, &.active {
+      background-color: rgba(59, 130, 246, 0.08) !important;
+      .nav-link {
+        color: #3b82f6 !important;
+        .fa-icon { opacity: 1; transform: translateY(-1px) scale(1.05); }
       }
     }
   }
@@ -260,6 +309,10 @@ export default {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
+}
+
+.fixed-top-padding {
+  padding-bottom: 3.5em;
 }
 </style>
 

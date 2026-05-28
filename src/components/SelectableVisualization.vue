@@ -75,6 +75,10 @@ div
       aw-categorytree(:events="activityStore.category.top")
     div(v-if="type == 'category_sunburst'")
       aw-sunburst-categories(:data="top_categories_hierarchy", style="height: 20em")
+    div(v-if="type == 'category_doughnut'")
+      aw-categorydoughnut(:events="activityStore.category.top")
+    div(v-if="type == 'category_polar'")
+      aw-categorypolar(:events="activityStore.category.top")
     div(v-if="type == 'timeline_barchart'")
       aw-timeline-barchart(:datasets="datasets", :timeperiod_start="activityStore.query_options.timeperiod.start", :timeperiod_length="activityStore.query_options.timeperiod.length", style="height: 100")
     div(v-if="type == 'sunburst_clock'")
@@ -158,6 +162,8 @@ export default {
         'top_categories',
         'category_tree',
         'category_sunburst',
+        'category_doughnut',
+        'category_polar',
         'top_editor_files',
         'top_editor_languages',
         'top_editor_projects',
@@ -235,6 +241,14 @@ export default {
         },
         category_sunburst: {
           title: 'Category Sunburst',
+          available: this.activityStore.category.available,
+        },
+        category_doughnut: {
+          title: 'Category Doughnut (Glassmorphic)',
+          available: this.activityStore.category.available,
+        },
+        category_polar: {
+          title: 'Category Polar Area',
           available: this.activityStore.category.available,
         },
         timeline_barchart: {

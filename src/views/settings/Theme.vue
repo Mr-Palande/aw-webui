@@ -38,17 +38,15 @@ export default {
         // Determine the actual theme to apply
         const detectedTheme = value === 'auto' ? detectPreferredTheme() : value;
 
-        // Apply newly set theme
-        // Create Dark Theme Element
-        const themeLink = document.createElement('link');
-        themeLink.href = '/dark.css';
-        themeLink.rel = 'stylesheet';
-
         // Remove existing theme link if present
-        document.querySelector(`link[href="${new URL(themeLink.href).pathname}"]`)?.remove();
+        document.getElementById('aw-theme-dark')?.remove();
 
         // Append Dark Theme Element if dark theme should be applied
         if (detectedTheme === 'dark') {
+          const themeLink = document.createElement('link');
+          themeLink.id = 'aw-theme-dark';
+          themeLink.href = window.location.protocol === 'file:' ? 'dark.css' : '/dark.css';
+          themeLink.rel = 'stylesheet';
           document.querySelector('head').appendChild(themeLink);
         }
       },

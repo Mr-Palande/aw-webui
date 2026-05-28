@@ -32,6 +32,7 @@ interface State {
   useColorFallback: boolean;
   landingpage: string;
   theme: 'light' | 'dark' | 'auto';
+  graphColorScheme: 'default' | 'cyberneon' | 'sunset' | 'nordicocean' | 'forest';
 
   newReleaseCheckData: Record<string, any>;
   userSatisfactionPollData: {
@@ -70,7 +71,8 @@ export const useSettingsStore = defineStore('settings', {
     useColorFallback: false,
     landingpage: '/home',
 
-    theme: 'auto',
+    theme: 'dark',
+    graphColorScheme: 'default',
 
     newReleaseCheckData: {
       isEnabled: true,

@@ -49,7 +49,7 @@ export function mergeCategorySets(sets: CategorySet[]): Category[] {
   return merged;
 }
 
-const COLOR_UNCAT = '#CCC';
+const COLOR_UNCAT = '#64748b';
 
 // The default categories
 // Should be run through createMissingParents before being used in most cases.
@@ -57,7 +57,7 @@ export const defaultCategories: Category[] = [
   {
     name: ['Work'],
     rule: { type: 'regex', regex: 'Google Docs|libreoffice|ReText' },
-    data: { color: '#0F0', score: 10 },
+    data: { color: '#10b981', score: 10 },
   },
   {
     name: ['Work', 'Programming'],
@@ -77,17 +77,17 @@ export const defaultCategories: Category[] = [
   {
     name: ['Media'],
     rule: { type: 'none' },
-    data: { color: '#F33' },
+    data: { color: '#e11d48' },
   },
   {
     name: ['Media', 'Games'],
     rule: { type: 'regex', regex: 'Minecraft|RimWorld' },
-    data: { color: '#F80' },
+    data: { color: '#f97316' },
   },
   {
     name: ['Media', 'Video'],
     rule: { type: 'regex', regex: 'YouTube|Plex|VLC' },
-    data: { color: '#F33' },
+    data: { color: '#e11d48' },
   },
   {
     name: ['Media', 'Social Media'],
@@ -96,7 +96,7 @@ export const defaultCategories: Category[] = [
       regex: 'reddit|Facebook|Twitter|Instagram|devRant',
       ignore_case: true,
     },
-    data: { color: '#FCC400' },
+    data: { color: '#f59e0b' },
   },
   {
     name: ['Media', 'Music'],
@@ -105,12 +105,12 @@ export const defaultCategories: Category[] = [
       regex: 'Spotify|Deezer',
       ignore_case: true,
     },
-    data: { color: '#A8FC00' },
+    data: { color: '#d946ef' },
   },
   {
     name: ['Comms'],
     rule: { type: 'none' },
-    data: { color: '#9FF' },
+    data: { color: '#0ea5e9' },
   },
   {
     name: ['Comms', 'IM'],

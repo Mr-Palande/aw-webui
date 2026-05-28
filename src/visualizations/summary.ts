@@ -108,10 +108,11 @@ function update(container: HTMLElement, apps: Entry[]) {
       .style('fill', appcolor);
 
     // App name
+    const displayName = app.name && app.name.length > 55 ? app.name.slice(0, 52) + '...' : app.name;
     eg.append('text')
       .attr('x', 5)
       .attr('y', curr_y + 1.4 * textSize)
-      .text(app.name)
+      .text(displayName)
       .attr('font-family', 'sans-serif')
       .attr('font-size', textSize + 'px')
       .attr('fill', textColor);

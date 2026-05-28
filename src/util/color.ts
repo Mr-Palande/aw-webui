@@ -4,49 +4,148 @@ import Color from 'color';
 import * as d3 from 'd3';
 import { IEvent, IBucket } from './interfaces';
 
+import { useSettingsStore } from '../stores/settings';
+
 // See here for examples:
 //   https://bl.ocks.org/pstuffa/3393ff2711a53975040077b7453781a9
 //
 
-const COLOR_UNCAT = '#CCC';
+const COLOR_UNCAT = '#64748b'; // Muted slate instead of #CCC
 
-const scale = d3.scaleOrdinal(['#90CAF9', '#FFE082', '#EF9A9A', '#A5D6A7']);
+export const palettes = {
+  default: [
+    '#3b82f6', // Indigo-Blue
+    '#10b981', // Emerald Green
+    '#8b5cf6', // Violet Purple
+    '#f43f5e', // Coral Rose
+    '#f59e0b', // Warm Amber
+    '#06b6d4', // Bright Cyan
+    '#ec4899', // Hot Pink
+    '#14b8a6', // Cool Teal
+    '#f97316', // Tangerine Orange
+    '#6366f1', // Indigo Purple
+  ],
+  cyberneon: [
+    '#00f5ff', // Neon Cyan
+    '#ff007f', // Neon Pink/Rose
+    '#39ff14', // Neon Green
+    '#e0b0ff', // Neon Violet
+    '#ffef00', // Neon Yellow
+    '#ff5f1f', // Neon Orange
+    '#bf00ff', // Neon Purple
+    '#00e5ff', // Bright Blue
+    '#ff00ff', // Fuchsia
+    '#1f51ff', // Neon Cobalt
+  ],
+  sunset: [
+    '#ff5e62', // Coral Sunset
+    '#ff9966', // Warm Orange
+    '#ff4e50', // Rose Red
+    '#f9d423', // Sun Yellow
+    '#e14eca', // Sunset Violet
+    '#f05a28', // Flame
+    '#f857a6', // Petal Pink
+    '#ff5858', // Crimson
+    '#e65c00', // Dark Amber
+    '#f953c6', // Hot Magenta
+  ],
+  nordicocean: [
+    '#0083b0', // Deep Aqua
+    '#00b4db', // Ice Blue
+    '#00c6ff', // Sky Blue
+    '#0072ff', // Royal Blue
+    '#0f2027', // Obsidian Blue
+    '#203a43', // Teal Slate
+    '#2c5364', // Deep Teal
+    '#3a7bd5', // Ocean Blue
+    '#3a6073', // Sea Slate
+    '#11998e', // Coastal Teal
+  ],
+  forest: [
+    '#11998e', // Teal/Mint
+    '#38ef7d', // Emerald Grass
+    '#134e5e', // Pine Blue
+    '#71b280', // Soft Sage
+    '#00b09b', // Jade
+    '#96c93d', // Lime Gold
+    '#a8ff78', // Spring Green
+    '#56ab2f', // Olive/Leaf
+    '#a8e063', // Meadow Yellow
+    '#2ecc71', // Clean Mint
+  ],
+};
 
-// Needed to prewarm the color table
+export function getPalette(): string[] {
+  try {
+    const settingsStore = useSettingsStore();
+    if (settingsStore && settingsStore.graphColorScheme && palettes[settingsStore.graphColorScheme]) {
+      return palettes[settingsStore.graphColorScheme];
+    }
+  } catch (e) {
+    // Pinia not yet initialized or outside Vue context
+  }
+  return palettes.default;
+}
+
+const scale = d3.scaleOrdinal(palettes.default);
 scale.domain(
   '0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20'.split(/, /)
 );
 
 const customColors = {
-  afk: '#EEE',
-  'not-afk': '#7F6',
-  hibernating: '#DD6',
+  afk: '#334155', // Sleek slate/grey for AFK
+  'not-afk': '#10b981', // Emerald green instead of #7F6
+  hibernating: '#f59e0b', // Amber instead of #DD6
 
-  'google-chrome': '#6AA7FE', // Google Blue: "#4885ed"
-  chromium: '#8CF', // Google Blue: "#4885ed"
-  firefox: '#F94', // Firefox Orange: "#E55B0A"
-  spotify: '#5FA', // Spotify Green: "#1ED760"
-  alacritty: '#FD8',
+  'google-chrome': '#6AA7FE', // Google Blue
+  chromium: '#8CF',
+  firefox: '#f97316', // Firefox Orange
+  spotify: '#10b981', // Spotify Emerald
+  alacritty: '#f59e0b',
 
-  vue: '#5d9', // Vue teal #4fc08d
-  python: '#369', // Python blue #2b5b84
-  javascript: '#f6b', // JavaScript pink #eb47a5
+  vue: '#10b981', // Vue green
+  python: '#3b82f6', // Python blue
+  javascript: '#ec4899', // JavaScript Pink
 
   // Developer domains
-  localhost: '#CCC',
-  'github.com': '#EBF',
-  'stackoverflow.com': Color('#F48024').lighten(0.3),
+  localhost: '#64748b',
+  'github.com': '#8b5cf6',
+  'stackoverflow.com': '#f97316',
 
-  'google.com': '#0AF',
-  'google.se': '#0AF',
+  'google.com': '#3b82f6',
+  'google.se': '#3b82f6',
 
   // Social media sites
-  'messenger.com': Color('#3b5998').lighten(0.5),
-  'facebook.com': Color('#3b5998').lighten(0.5),
+  'messenger.com': '#0084FF',
+  'facebook.com': '#1877F2',
 
   // Categories
   uncategorized: COLOR_UNCAT,
 };
+
+export function upgradeLegacyColor(color: string): string {
+  const mapping: Record<string, string> = {
+    '#0F0': '#10b981',     // Work green -> Emerald Mint
+    '#0f0': '#10b981',
+    '#F33': '#e11d48',     // Media red -> Premium Rose/Coral
+    '#f33': '#e11d48',
+    '#F80': '#f97316',     // Games orange -> Warm Sunset
+    '#f80': '#f97316',
+    '#FCC400': '#f59e0b',  // Social yellow -> Warm Amber
+    '#fcc400': '#f59e0b',
+    '#A8FC00': '#d946ef',  // Music yellow-green -> Vibrant Fuchsia/Magenta
+    '#a8fc00': '#d946ef',
+    '#9FF': '#0ea5e9',     // Comms cyan -> Deep Sky Blue
+    '#9ff': '#0ea5e9',
+    '#CCC': '#64748b',     // Uncategorized grey -> Slate
+    '#ccc': '#64748b',
+    '#7F6': '#10b981',     // not-afk green -> Emerald Mint
+    '#7f6': '#10b981',
+    '#DD6': '#f59e0b',     // hibernating yellow -> Amber
+    '#dd6': '#f59e0b'
+  };
+  return mapping[color] || color;
+}
 
 function hashcode(str: string): number {
   let hash = 0;
@@ -64,14 +163,20 @@ function hashcode(str: string): number {
 export function getColorFromString(appname: string): string {
   appname = appname || '';
   appname = appname.toLowerCase();
-  return customColors[appname] || scale(Math.abs(hashcode(appname) % 20).toString());
+  if (customColors[appname]) {
+    return customColors[appname];
+  }
+  const palette = getPalette();
+  const dynamicScale = d3.scaleOrdinal(palette);
+  dynamicScale.domain('0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20'.split(/, /));
+  return dynamicScale(Math.abs(hashcode(appname) % palette.length).toString());
 }
 
 // TODO: Move into vuex?
 export function getColorFromCategory(c: Category, allCats: Category[]): string {
   // Returns the color for a certain category, falling back to parents if none set
   if (c && c.data && c.data.color) {
-    return c.data.color;
+    return upgradeLegacyColor(c.data.color);
   } else if (c && c.name.slice(0, -1).length > 0) {
     // If no color is set on category, traverse parents until one is found
     const parent = c.name.slice(0, -1);

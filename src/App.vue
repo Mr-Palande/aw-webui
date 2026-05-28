@@ -40,7 +40,7 @@ export default {
     const settingsStore = useSettingsStore();
     await settingsStore.ensureLoaded();
     const theme = settingsStore.theme;
-    const detectedTheme = theme === 'auto' ? detectPreferredTheme() : theme;
+    const detectedTheme = theme === 'auto' ? 'dark' : theme;
 
     // Apply the dark theme if detected
     if (detectedTheme === 'dark') {
@@ -50,7 +50,8 @@ export default {
         // Method 1: Create <link> Element
         // Create Dark Theme Element
         const themeLink = document.createElement('link');
-        themeLink.href = '/dark.css'; // darkCssUrl
+        themeLink.id = 'aw-theme-dark';
+        themeLink.href = window.location.protocol === 'file:' ? 'dark.css' : '/dark.css';
         themeLink.rel = 'stylesheet';
         // Append Dark Theme Element
         document.querySelector('head').appendChild(themeLink);

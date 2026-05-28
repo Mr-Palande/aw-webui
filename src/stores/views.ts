@@ -24,6 +24,8 @@ const desktopViews: View[] = [
       { type: 'top_categories', size: 3 },
       { type: 'category_tree', size: 3 },
       { type: 'category_sunburst', size: 3 },
+      { type: 'category_doughnut', size: 3 },
+      { type: 'category_polar', size: 3 },
     ],
   },
   {
@@ -64,6 +66,8 @@ const androidViews = [
       { type: 'timeline_barchart', size: 3 },
       { type: 'category_tree', size: 3 },
       { type: 'category_sunburst', size: 3 },
+      { type: 'category_doughnut', size: 3 },
+      { type: 'category_polar', size: 3 },
     ],
   },
 ];
