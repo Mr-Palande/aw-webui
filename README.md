@@ -1,115 +1,71 @@
-# aw-webui
+# ActivityWatch Web UI - Custom Dashboard
 
-A web-based UI for ActivityWatch, built with Vue.js
+This is a customized version of the ActivityWatch Web UI dashboard. It features a brand-new layout, optimized telemetry visualizations, and customized user interface elements for tracking your time.
 
-[![Build Status](https://github.com/ActivityWatch/aw-webui/workflows/Build/badge.svg)](https://github.com/ActivityWatch/aw-webui/actions)
-[![Coverage Status](https://codecov.io/gh/ActivityWatch/aw-webui/branch/master/graph/badge.svg)](https://codecov.io/gh/ActivityWatch/aw-webui)
-[![Known Vulnerabilities](https://snyk.io/test/github/ActivityWatch/aw-webui/badge.svg)](https://snyk.io/test/github/ActivityWatch/aw-webui)
+ActivityWatch is a privacy-first, open-source automated time tracker.
 
-## Getting started
+---
+## Email Your Ideas To MrPalande993@gmail.com
 
-Getting started with setting up the development environment is pretty straightforward:
+## 🚀 How to Apply This Custom UI (For Users)(btw if u using portable version just replace the files inside statics with new one)
 
-```bash
-# Start an instance of aw-server running in testing mode (on port 5666, with a separate database),
-# This is what the web UI will connect to by default when run in development mode.
-aw-qt --testing
-# or, to run without watchers:
-aw-server --testing
+If you just want to use this custom interface with your existing ActivityWatch application on Windows, you don’t need to compile anything. Follow these simple steps:
 
-# Install dependencies
-npm install
-# or, to get exact versions of dependencies:
-npm ci
+### Step 1: Download the UI Files
+1. Click the green **Code** button at the top right of this GitHub page.
+2. Select **Download ZIP**.
+3. Extract the downloaded ZIP folder on your computer. You will see a folder named `dist` (containing `index.html`, a `css` folder, and a `js` folder).
 
-# start aw-webui in dev mode
-npm run serve
-```
+### Step 2: Paste the Files Into ActivityWatch
+1. Completely close ActivityWatch (right-click the icon in your Windows system tray and click **Quit**).
+2. Open your Windows File Explorer, press `Win + R`, type `%LocalAppData%\activitywatch`, and hit **Enter**.
+3. Inside this folder, create a brand-new folder named exactly **`static`**.
+4. Open the extracted folder from Step 1, go inside the **`dist`** folder, and copy **all of its contents**.
+5. Paste those files **directly inside** your newly created `static` folder.
 
-Alternatively, you can run `make dev` to install dependencies and serve the application locally.
+> ⚠️ **Important:** Do not copy the main folder itself. The `index.html` file must sit directly inside the `static` directory (`.../activitywatch/static/index.html`).
 
-You might have to configure CORS for it to work, see the CORS section below.
+### Step 3: Configure Your Windows Shortcut
+Because the standard Windows installer hides the default UI inside the application files, you must tell Windows to look at your new `static` folder instead:
 
-You may also want to generate fake data so you have something to test with, see: https://github.com/ActivityWatch/aw-fakedata/
+1. Right-click your desktop **ActivityWatch** shortcut and select **Properties**.
+2. Locate the **Target** input field. It will look like this:
+   `"C:\Users\<YourUsername>\AppData\Local\activitywatch\aw-qt.exe"`
+3. Add a space at the very end of that line, and paste the custom flag outside of the quotation marks:
+   `"C:\Users\<YourUsername>\AppData\Local\activitywatch\aw-qt.exe" --custom-static ./static`
+4. Click **Apply** and then **OK**.
 
-## Building
+Launch ActivityWatch using that shortcut, open your browser to `http://localhost:5600/`, and enjoy your brand-new custom UI!
 
-To build the production bundle, simply run the following:
+---
 
-```bash
-# Install dependencies
-npm ci
+## 🛠️ Developer Setup (For Modifying the Code)
 
-# Build for production
-npm run build
-```
+If you want to make further visual tweaks or changes to the source code:
 
-## Using a pre-release with your main install
+1. Clone this repository and install the developer dependencies:
+   ```bash
+   npm install
+   ```
+2. Start your local background trackers in an isolated test environment:
+   ```bash
+   aw-qt --testing
+   ```
+3. Run the live-reload development server to preview your edits on `http://localhost:8080`:
+   ```bash
+   npm run serve
+   ```
+4. When done making changes, compile a new production build folder by running:
+   ```bash
+   npm run build
+   ```
 
-**Note:** Running a development version of aw-webui with an old aw-server can lead to issues due to version incompatibilities.
+---
 
-### By copying the web-assets to your main install
+## 📄 License
 
-You can run a development version of aw-webui with your main version of ActivityWatch by building it (or fetching the latest build from CI) and replacing the contents of the `static` directory of your aw-server (or aw-server-rust) installation. For simplicity, back up the original directory for easier switching back.
+This project is licensed under the same terms as the original ActivityWatch Web UI ([MPL-2.0]. See the `LICENSE` file for details.
 
-The assets are stored in the following directories (relative to your installation directory), depending on if you use aw-server-python (default) or aw-server-rust:
 
- - aw-server-python: `activitywatch/aw-server/aw_server/static/`
- - aw-server-rust: `activitywatch/aw-server-rust/static/`
 
-You can copy the assets manually from your `make build` or `npm run build` output to the above locations.
 
-Once you've put the files in the directories, you may have to do a hard refresh in your browser to invalidate any stale caches.
-
-### Using `--webpath` with aw-server-rust
-
-Instead of copying files, `aw-server-rust` supports loading the web UI from a custom path via the `--webpath` flag. This is especially useful on platforms where the server bundles static assets into the executable (e.g. Windows):
-
-```bash
-# Point aw-server-rust to your local build output
-aw-server-rust --webpath /path/to/aw-webui/dist
-```
-
-This avoids having to copy files and makes it easy to switch between development and production builds.
-
-### Using your main install's data
-
-If you want to actively iterate on `aw-webui` with your local production data (with your production server running), you'll want to use a development build, automatically update it, and connect to your production data. To do this, in `aw-webui` source directory, in one terminal window run:
-
-```bash
-AW_SERVER_URL="'http://localhost:5600'" npx vue-cli-service build --watch --dest=../aw-server/static
-```
-
-If you want to add `debugger` statements in your code and otherwise break linting rules, you'll need to add a `--skip-plugins=no-debugger` to that command.
-Then, in another terminal (with your venv activated) run:
-
-```shell
-python3 -m http.server --bind 127.0.0.1 27180 --directory ../aw-server/static
-```
-
-## Tests
-
-Tests can be run with:
-
-```bash
-npm test
-```
-
-There are also E2E tests. You need to have an aw-server and the web UI running in development mode (with `npm run serve`, as instructed above). After you have that setup, you can run the tests with:
-
-```bash
-make test-e2e
-```
-
-## Development
-
-### CORS
-
-For development, you'll also have to add/change CORS configuration in the `aw-server` configs by adding `cors_origins = http://localhost:27180` to your
-configuration file `/activitywatch/aw-server/aw-server.toml` under respective sections (`server-testing` section when running server in testing mode).
-
-### Code structure
-
-One of the first things that happen in the application is the execution of `src/main.js`. This loads things such as bootstrap-vue and a bunch of other stuff that's globally used (filters, resources).
-
-The main.js file then loads the `src/App.vue` file, which is the root component of the application.
