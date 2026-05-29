@@ -19,9 +19,9 @@ div
     | For help on how to write categorization rules, see #[a(href="https://docs.activitywatch.net/en/latest/features/categorization.html") the documentation].
 
   // Category set switcher
-  div.my-3.p-3(style="background: var(--bs-light, #f8f9fa); border-radius: 4px;")
+  div.my-3.p-3(style="background: var(--aw-card-bg, var(--bs-light, #f8f9fa)); border: 1px solid var(--aw-card-border, var(--bs-border-color, rgba(0,0,0,0.12))); border-radius: 12px;")
     div.d-flex.align-items-center.flex-wrap(style="gap: 0.5rem;")
-      span.font-weight-bold(style="white-space: nowrap") Category set:
+      span.font-weight-bold(style="white-space: nowrap; color: var(--aw-text-primary, inherit);") Category set:
       b-select(
         v-model="activeSetId"
         @change="onSetChange"
