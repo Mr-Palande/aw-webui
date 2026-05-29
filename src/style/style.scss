@@ -6,8 +6,8 @@
   
   /* Color Palette */
   --aw-bg-gradient: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  --aw-card-bg: rgba(255, 255, 255, 0.85);
-  --aw-card-border: rgba(226, 232, 240, 0.8);
+  --aw-card-bg: rgba(255, 255, 255, 0.03);
+  --aw-card-border: rgba(226, 232, 240, 0.4);
   --aw-card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.01);
   --aw-card-shadow-hover: 0 20px 45px -12px rgba(79, 70, 229, 0.12), 0 4px 12px rgba(79, 70, 229, 0.04);
   
@@ -74,8 +74,8 @@ body {
 /* Premium Card Container Overwrite */
 .aw-container {
   background-color: var(--aw-card-bg) !important;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
   border: 1px solid var(--aw-card-border) !important;
   border-radius: var(--aw-border-radius-lg);
   box-shadow: var(--aw-card-shadow);
@@ -87,6 +87,8 @@ body {
   border-radius: var(--aw-border-radius-md) !important;
   border: 1px solid var(--aw-card-border) !important;
   background-color: var(--aw-card-bg) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   transition: transform var(--aw-transition-normal), box-shadow var(--aw-transition-normal), border-color var(--aw-transition-normal) !important;
   

@@ -151,7 +151,7 @@ export default {
 
   watch: {
     date: function (to) {
-      this.starttime = moment(to);
+      this.starttime = moment(to).startOf('day');
       this.endtime = moment(this.starttime).add(1, 'days');
       this.visualize();
     },
@@ -162,8 +162,8 @@ export default {
   },
   mounted: function () {
     sunburst.create(this.$el, this.height);
-    this.starttime = moment(this.date);
-    this.endtime = moment(this.date).add(1, 'days');
+    this.starttime = moment(this.date).startOf('day');
+    this.endtime = moment(this.date).startOf('day').add(1, 'days');
     this.visualize();
   },
 

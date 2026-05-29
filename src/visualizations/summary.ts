@@ -65,13 +65,26 @@ function update(container: HTMLElement, apps: Entry[]) {
 
   let curr_y = 0;
   const longest_duration = apps[0].duration;
+  const containerWidth = container.getBoundingClientRect().width || 300;
+
   _.each(apps, function (app, i) {
     // TODO: Expand on click and list titles
 
     // Variables
     const width = (app.duration / longest_duration) * 100 + '%';
     const textSize = 13;
-    const itemHeight = 36;
+
+    // Check if name and duration will overlap in narrow containers
+    const displayName = app.name && app.name.length > 32 ? app.name.slice(0, 29) + '...' : app.name;
+    const durString = seconds_to_duration(app.duration);
+    
+    const approxNameWidth = (displayName || '').length * 7.2;
+    const approxDurWidth = (durString || '').length * 7.8;
+    const willOverlap = (approxNameWidth + approxDurWidth + 16) > containerWidth;
+
+    const barY = willOverlap ? (curr_y + 28 + 10) : (curr_y + 24);
+    const durY = willOverlap ? (curr_y + 26) : (curr_y + 14);
+    const entryHeight = willOverlap ? 48 : 36;
 
     let appcolor: string;
     if (Array.isArray(app.colorKey)) {
@@ -96,12 +109,12 @@ function update(container: HTMLElement, apps: Entry[]) {
         eg.select('.progress-fill').style('fill', appcolor);
       });
 
-    eg.append('title').text(app.hovertext + '\n' + seconds_to_duration(app.duration));
+    eg.append('title').text(app.hovertext + '\n' + durString);
 
     // Sleek background track capsule (full width)
     eg.append('rect')
       .attr('x', 0)
-      .attr('y', curr_y + 24)
+      .attr('y', barY)
       .attr('rx', 4)
       .attr('ry', 4)
       .attr('width', '100%')
@@ -112,7 +125,7 @@ function update(container: HTMLElement, apps: Entry[]) {
     eg.append('rect')
       .attr('class', 'progress-fill')
       .attr('x', 0)
-      .attr('y', curr_y + 24)
+      .attr('y', barY)
       .attr('rx', 4)
       .attr('ry', 4)
       .attr('width', width)
@@ -121,7 +134,6 @@ function update(container: HTMLElement, apps: Entry[]) {
       .style('transition', 'fill 0.2s ease');
 
     // App name (Left aligned)
-    const displayName = app.name && app.name.length > 32 ? app.name.slice(0, 29) + '...' : app.name;
     eg.append('text')
       .attr('x', 0)
       .attr('y', curr_y + 14)
@@ -131,18 +143,18 @@ function update(container: HTMLElement, apps: Entry[]) {
       .attr('font-weight', '600')
       .attr('fill', 'var(--aw-text-primary)');
 
-    // Duration (Right aligned at 100%)
+    // Duration (Right aligned or shifted to next line)
     eg.append('text')
       .attr('x', '100%')
-      .attr('y', curr_y + 14)
+      .attr('y', durY)
       .attr('text-anchor', 'end')
-      .text(seconds_to_duration(app.duration))
+      .text(durString)
       .attr('font-family', "'Outfit', 'Inter', monospace, sans-serif")
-      .attr('font-size', textSize - 1 + 'px')
+      .attr('font-size', (textSize - 1) + 'px')
       .attr('font-weight', '500')
       .attr('fill', 'var(--aw-text-muted)');
 
-    curr_y += itemHeight + 10;
+    curr_y += entryHeight + 10;
   });
   curr_y -= 10;
 

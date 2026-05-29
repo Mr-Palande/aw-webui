@@ -21,17 +21,10 @@ import {
 } from '~/util/time';
 
 function hourToTick(hours: number): string {
-  if (hours > 1) {
-    return `${hours}h`;
-  } else {
-    if (hours == 1) {
-      return '1h';
-    } else if (hours == 0) {
-      return '0';
-    } else {
-      return Math.round(hours * 60) + 'm';
-    }
+  if (hours === 0) {
+    return '0';
   }
+  return `${hours}h`;
 }
 
 export default {
@@ -66,7 +59,7 @@ export default {
       const start = this.timeperiod_start;
       const [count, resolution] = this.timeperiod_length;
       if (resolution.startsWith('day') && count == 1) {
-        const hourOffset = get_hour_offset();
+        const hourOffset = 0;
         return _.range(0, 24).map(h => `${(h + hourOffset) % 24}`);
       } else if (resolution.startsWith('day')) {
         return _.range(count).map(d => `${d + 1}`);
@@ -94,9 +87,11 @@ export default {
       }
     },
     chartData() {
+      let datasets = _.sortBy(this.datasets, d => d.label);
+
       return {
         labels: this.labels,
-        datasets: _.sortBy(this.datasets, d => d.label),
+        datasets: datasets,
         title: {
           display: true,
           text: 'Timeline',
@@ -114,6 +109,7 @@ export default {
             intersect: false,
             callbacks: {
               label: function (context) {
+                const label = context.dataset.label || '';
                 const value = context.parsed.y;
                 let hours = Math.floor(value);
                 let minutes = Math.round((value - hours) * 60);
@@ -122,7 +118,7 @@ export default {
                   hours += 1;
                 }
                 const minutes_str = minutes.toString().padStart(2, '0');
-                return `${hours}:${minutes_str}`;
+                return `${label}: ${hours}:${minutes_str}`;
               },
             },
           },

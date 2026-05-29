@@ -296,7 +296,7 @@ function update(
     let root_end = root_start.clone().add(root_event.duration, 'seconds');
     if (show_whole_day) {
       if (startOfDay) {
-        root_start = startOfDay.clone();
+        root_start = startOfDay.clone().startOf('day');
       } else {
         root_start = root_start.startOf('day');
       }

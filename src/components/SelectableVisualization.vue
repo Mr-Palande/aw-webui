@@ -218,9 +218,25 @@ div.vis-widget-card
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   position: relative !important;
   height: 100% !important;
-  overflow: hidden !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
   display: flex !important;
   flex-direction: column !important;
+
+  /* Thin scrollbar for widget content */
+  &::-webkit-scrollbar {
+    width: 5px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
 
   &:hover {
     background: rgba(255, 255, 255, 0.04) !important;
@@ -248,7 +264,8 @@ div.vis-widget-card
   > div:not(.resize-handle):not(.vis-style-dropdown-btn) {
     flex: 1;
     min-height: 0;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   // Hoverable Right Resize Handle
@@ -650,14 +667,15 @@ export default {
       const view = viewsStore.views.find(v => v.id === this.viewId);
       if (!view || !view.elements[this.id]) return 1;
       const el = view.elements[this.id];
-      if (el.type === 'vis_timeline') {
-        return Math.max(4, el.colSpan || 4);
-      }
-      let defaultCol = el.size === 3 ? 4 : (el.size === 2 ? 2 : 1);
-      if (el.type === 'category_doughnut' || el.type === 'category_polar') {
-        defaultCol = 2;
-      }
-      return el.colSpan || defaultCol;
+      // Min-size map (mirrors ActivityView's MIN_GRID_SIZES)
+      const minCols = {
+        vis_timeline: 4, category_sunburst: 3, sunburst_clock: 3,
+        category_doughnut: 2, category_polar: 2, timeline_barchart: 2,
+        category_tree: 1,
+      }[el.type] || 1;
+      let defaultCol = el.size === 3 ? 4 : (el.size === 2 ? 2 : minCols);
+      defaultCol = Math.max(minCols, defaultCol);
+      return Math.max(minCols, el.colSpan || defaultCol);
     },
     rowSpan() {
       if (!this.viewId) return 1;
@@ -665,12 +683,13 @@ export default {
       const view = viewsStore.views.find(v => v.id === this.viewId);
       if (!view || !view.elements[this.id]) return 1;
       const el = view.elements[this.id];
-      if (el.type === 'timeline_barchart') {
-        return Math.max(2, el.rowSpan || 2);
-      }
-      // Default: timeline_barchart=2, vis_timeline=2, category_sunburst=2, category_doughnut=2, category_polar=2, others=1
-      const defaultRow = (el.type === 'timeline_barchart' || el.type === 'vis_timeline' || el.type === 'category_sunburst' || el.type === 'category_doughnut' || el.type === 'category_polar') ? 2 : 1;
-      return el.rowSpan || defaultRow;
+      // Min-size map (mirrors ActivityView's MIN_GRID_SIZES)
+      const minRows = {
+        category_sunburst: 3, sunburst_clock: 3,
+        category_doughnut: 2, category_polar: 2, timeline_barchart: 2,
+        vis_timeline: 2, category_tree: 2,
+      }[el.type] || 1;
+      return Math.max(minRows, el.rowSpan || minRows);
     },
     isVisLargeFallback() {
       return this.type === 'sunburst_clock' || this.type === 'vis_timeline';

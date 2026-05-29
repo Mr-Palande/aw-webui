@@ -120,6 +120,36 @@ import { useViewsStore } from '~/stores/views';
 import { useActivityStore } from '~/stores/activity';
 import { useSettingsStore } from '~/stores/settings';
 
+// Centralized minimum grid dimensions for every widget type.
+// Any widget set below these minimums will be clamped automatically.
+const MIN_GRID_SIZES: Record<string, { cols: number; rows: number }> = {
+  top_apps:             { cols: 1, rows: 1 },
+  top_titles:           { cols: 1, rows: 1 },
+  top_domains:          { cols: 1, rows: 1 },
+  top_urls:             { cols: 1, rows: 1 },
+  top_browser_titles:   { cols: 1, rows: 1 },
+  top_categories:       { cols: 1, rows: 1 },
+  top_editor_files:     { cols: 1, rows: 1 },
+  top_editor_languages: { cols: 1, rows: 1 },
+  top_editor_projects:  { cols: 1, rows: 1 },
+  top_stopwatches:      { cols: 1, rows: 1 },
+  top_bucket_data:      { cols: 1, rows: 1 },
+  category_tree:        { cols: 1, rows: 2 },
+  category_sunburst:    { cols: 3, rows: 3 },
+  category_doughnut:    { cols: 2, rows: 2 },
+  category_polar:       { cols: 2, rows: 2 },
+  timeline_barchart:    { cols: 2, rows: 2 },
+  sunburst_clock:       { cols: 3, rows: 3 },
+  vis_timeline:         { cols: 4, rows: 2 },
+  custom_vis:           { cols: 1, rows: 1 },
+  score:                { cols: 1, rows: 1 },
+};
+
+function clampGrid(type: string, c: number, r: number): { c: number; r: number } {
+  const min = MIN_GRID_SIZES[type] || { cols: 1, rows: 1 };
+  return { c: Math.max(min.cols, c), r: Math.max(min.rows, r) };
+}
+
 export default {
   name: 'ActivityView',
   components: {
@@ -317,8 +347,35 @@ export default {
 
       await useViewsStore().editView({ view_id: this.view.id, el_id: id, type, props });
 
+      // Enforce minimum grid dimensions on widget type change (uses centralized MIN_GRID_SIZES)
+      const rawC = this.elements[id].colSpan || 1;
+      const rawR = this.elements[id].rowSpan || 1;
+      const clamped = clampGrid(type, rawC, rawR);
+      const sizeChanged = clamped.c !== rawC || clamped.r !== rawR;
+
+      if (sizeChanged) {
+        useViewsStore().changeElementGrid({
+          view_id: this.view.id,
+          el_id: id,
+          prop: 'colSpan',
+          value: clamped.c,
+        });
+        useViewsStore().changeElementGrid({
+          view_id: this.view.id,
+          el_id: id,
+          prop: 'rowSpan',
+          value: clamped.r,
+        });
+      }
+
+      useViewsStore().save();
+
       if (this.activeSettingsEl && this.activeSettingsEl.index === id) {
         this.activeSettingsEl.type = type;
+        if (sizeChanged) {
+          this.activeSettingsEl.colSpan = clamped.c;
+          this.activeSettingsEl.rowSpan = clamped.r;
+        }
       }
     },
     async onRemove(id) {
@@ -339,39 +396,31 @@ export default {
       };
     },
     getVisStyle(el) {
-      let defaultColSpan = el.size === 3 ? 4 : (el.size === 2 ? 2 : 1);
-      if (el.type === 'vis_timeline') {
-        defaultColSpan = 4;
-      } else if (el.type === 'category_doughnut' || el.type === 'category_polar') {
-        defaultColSpan = 2;
-      }
-      let colSpan = el.colSpan || defaultColSpan;
-      if (el.type === 'vis_timeline') {
-        colSpan = Math.max(4, colSpan);
-      }
+      const min = MIN_GRID_SIZES[el.type] || { cols: 1, rows: 1 };
 
-      let defaultRowSpan = 1;
-      if (el.type === 'timeline_barchart' || el.type === 'vis_timeline' || el.type === 'category_sunburst' || el.type === 'category_doughnut' || el.type === 'category_polar') {
-        defaultRowSpan = 2;
-      }
-      let rowSpan = el.rowSpan || defaultRowSpan;
-      if (el.type === 'timeline_barchart') {
-        rowSpan = Math.max(2, rowSpan);
-      }
+      // Derive sensible defaults from the old size property or the min map
+      let defaultColSpan = el.size === 3 ? 4 : (el.size === 2 ? 2 : min.cols);
+      defaultColSpan = Math.max(min.cols, defaultColSpan);
+      let defaultRowSpan = min.rows;
+
+      // Clamp actual values to minimums
+      const colSpan = Math.max(min.cols, el.colSpan || defaultColSpan);
+      const rowSpan = Math.max(min.rows, el.rowSpan || defaultRowSpan);
 
       return {
         gridColumn: `span ${colSpan}`,
         gridRow: `span ${rowSpan}`,
-        overflow: 'hidden',
+        overflow: 'auto',
       };
     },
     onOpenSettings({ index, type, colSpan, rowSpan, rect }) {
       this.activeSettingsEl = { index, type, colSpan, rowSpan };
-      this.panelX = Math.min(rect.left + window.scrollX, window.innerWidth - 300);
-      this.panelY = rect.bottom + window.scrollY + 8;
+      const parentRect = this.$el.getBoundingClientRect();
+      this.panelX = Math.max(10, Math.min(rect.right - parentRect.left - 280, parentRect.width - 300));
+      this.panelY = rect.top - parentRect.top + 40;
       // Clamp so panel doesn't go off screen
-      if (this.panelY + 400 > window.innerHeight) {
-        this.panelY = Math.max(40, rect.top + window.scrollY - 400);
+      if (this.panelY + 400 > parentRect.height) {
+        this.panelY = Math.max(40, rect.top - parentRect.top - 400);
       }
       this.showSettingsPanel = true;
     },
@@ -383,11 +432,13 @@ export default {
       this.panelStartLeft = this.panelX;
       this.panelStartTop = this.panelY;
 
+      const parentRect = this.$el.getBoundingClientRect();
+
       const onMove = (e: MouseEvent) => {
         const dx = e.clientX - this.panelDragStartX;
         const dy = e.clientY - this.panelDragStartY;
-        this.panelX = Math.max(0, Math.min(window.innerWidth - 280, this.panelStartLeft + dx));
-        this.panelY = Math.max(0, Math.min(window.innerHeight - 100, this.panelStartTop + dy));
+        this.panelX = Math.max(0, Math.min(parentRect.width - 280, this.panelStartLeft + dx));
+        this.panelY = Math.max(0, this.panelStartTop + dy);
       };
       const onUp = () => {
         window.removeEventListener('mousemove', onMove);
@@ -398,56 +449,37 @@ export default {
     },
     setGridSpan(index: number, c: number, r: number) {
       const el = this.elements[index];
-      if (el.type === 'vis_timeline') {
-        c = Math.max(4, c);
-      }
-      if (el.type === 'timeline_barchart') {
-        r = Math.max(2, r);
-      }
-      if (el.type === 'category_sunburst' || el.type === 'sunburst_clock') {
-        c = Math.max(3, c);
-        r = Math.max(3, r);
-      }
+      const clamped = clampGrid(el.type, c, r);
 
       useViewsStore().changeElementGrid({
         view_id: this.view.id,
         el_id: index,
         prop: 'colSpan',
-        value: c,
+        value: clamped.c,
       });
       useViewsStore().changeElementGrid({
         view_id: this.view.id,
         el_id: index,
         prop: 'rowSpan',
-        value: r,
+        value: clamped.r,
       });
       useViewsStore().save();
       if (this.activeSettingsEl && this.activeSettingsEl.index === index) {
-        this.activeSettingsEl.colSpan = c;
-        this.activeSettingsEl.rowSpan = r;
+        this.activeSettingsEl.colSpan = clamped.c;
+        this.activeSettingsEl.rowSpan = clamped.r;
       }
     },
     activeColSpan() {
       if (!this.activeSettingsEl) return 0;
-      let c = this.hoverColSpan || this.activeSettingsEl.colSpan;
-      if (this.activeSettingsEl.type === 'vis_timeline') {
-        c = Math.max(4, c);
-      }
-      if (this.activeSettingsEl.type === 'category_sunburst' || this.activeSettingsEl.type === 'sunburst_clock') {
-        c = Math.max(3, c);
-      }
-      return c;
+      const c = this.hoverColSpan || this.activeSettingsEl.colSpan;
+      const min = MIN_GRID_SIZES[this.activeSettingsEl.type] || { cols: 1, rows: 1 };
+      return Math.max(min.cols, c);
     },
     activeRowSpan() {
       if (!this.activeSettingsEl) return 0;
-      let r = this.hoverRowSpan || this.activeSettingsEl.rowSpan;
-      if (this.activeSettingsEl.type === 'timeline_barchart') {
-        r = Math.max(2, r);
-      }
-      if (this.activeSettingsEl.type === 'category_sunburst' || this.activeSettingsEl.type === 'sunburst_clock') {
-        r = Math.max(3, r);
-      }
-      return r;
+      const r = this.hoverRowSpan || this.activeSettingsEl.rowSpan;
+      const min = MIN_GRID_SIZES[this.activeSettingsEl.type] || { cols: 1, rows: 1 };
+      return Math.max(min.rows, r);
     },
     getGridCellClass(c: number, r: number) {
       if (!this.activeSettingsEl) return {};
@@ -455,18 +487,9 @@ export default {
       const activeR = this.activeRowSpan();
       const isSelectedOrHovered = c <= activeC && r <= activeR;
 
-      let currentC = this.activeSettingsEl.colSpan;
-      let currentR = this.activeSettingsEl.rowSpan;
-      if (this.activeSettingsEl.type === 'vis_timeline') {
-        currentC = Math.max(4, currentC);
-      }
-      if (this.activeSettingsEl.type === 'timeline_barchart') {
-        currentR = Math.max(2, currentR);
-      }
-      if (this.activeSettingsEl.type === 'category_sunburst' || this.activeSettingsEl.type === 'sunburst_clock') {
-        currentC = Math.max(3, currentC);
-        currentR = Math.max(3, currentR);
-      }
+      const min = MIN_GRID_SIZES[this.activeSettingsEl.type] || { cols: 1, rows: 1 };
+      const currentC = Math.max(min.cols, this.activeSettingsEl.colSpan);
+      const currentR = Math.max(min.rows, this.activeSettingsEl.rowSpan);
 
       const isCurrentSelection = c <= currentC && r <= currentR;
       return {
@@ -494,7 +517,7 @@ export default {
   }
 
   .grid-item-wrapper {
-    overflow: hidden;
+    overflow: auto;
     border-radius: 16px;
   }
 

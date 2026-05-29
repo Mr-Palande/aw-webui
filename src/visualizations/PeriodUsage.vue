@@ -7,7 +7,7 @@ svg
 
 svg {
   width: 100%;
-  height: 40pt;
+  height: 90pt;
   border: 1px solid $lightBorderColor;
   border-radius: 0.5em;
 }

@@ -26,6 +26,7 @@ div#visualization {
     // Ensure tooltip is readable
     max-width: 400px;
     pointer-events: none;
+    z-index: 999999 !important;
   }
 
   .vis-labelset .vis-label .vis-inner {

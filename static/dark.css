@@ -5,9 +5,9 @@
   
   /* Vibrant Obsidian Palette Overwrites */
   --aw-bg-gradient: radial-gradient(circle at top, #111827 0%, #090d16 100%);
-  --aw-card-bg: rgba(17, 24, 39, 0.75);
-  --aw-card-border: rgba(255, 255, 255, 0.08);
-  --aw-card-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.05);
+  --aw-card-bg: rgba(11, 15, 25, 0.03);
+  --aw-card-border: rgba(255, 255, 255, 0.04);
+  --aw-card-shadow: 0 8px 20px -10px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.03);
   --aw-card-shadow-hover: 0 25px 50px -12px rgba(6, 182, 212, 0.22), 0 4px 15px rgba(6, 182, 212, 0.08);
   
   --aw-text-primary: #f1f5f9;
@@ -46,6 +46,8 @@ hr {
   background-color: var(--aw-card-bg) !important;
   border-color: var(--aw-card-border) !important;
   box-shadow: var(--aw-card-shadow) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
 }
 
 .card:hover,
@@ -56,10 +58,10 @@ hr {
 
 /* Navigation Overrides */
 .aw-navbar {
-  background-color: rgba(17, 24, 39, 0.75) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
+  background-color: rgba(11, 15, 25, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
 }
 
 .nav-item a.nav-link {
@@ -79,10 +81,11 @@ hr {
 }
 
 .dropdown-menu {
-  background-color: rgba(17, 24, 39, 0.9) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-  backdrop-filter: blur(20px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+  background-color: rgba(11, 15, 25, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
 }
 
 .dropdown-menu .dropdown-item {
@@ -159,9 +162,12 @@ hr {
   color: #0f172a !important;
 }
 
-.card {
-  background-color: rgba(17, 24, 39, 0.75) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+.card,
+.aw-selectable-vis {
+  background-color: var(--aw-card-bg) !important;
+  border-color: rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
 }
 
 .custom-file-label {
@@ -213,6 +219,7 @@ hr {
   padding: 10px !important;
   border-radius: 8px !important;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
+  z-index: 999999 !important;
 }
 
 .vis-tooltip table {
@@ -301,7 +308,7 @@ div[style="color: rgb(85, 85, 85); font-size: 0.9em;"] {
 }
 
 .bg-light {
-  background-color: rgba(17, 24, 39, 0.75) !important;
+  background-color: var(--aw-card-bg) !important;
 }
 
 ::-webkit-scrollbar-thumb {

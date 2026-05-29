@@ -112,6 +112,19 @@ function update(svg_elem: SVGElement, usage_arr, onPeriodClicked) {
         onPeriodClicked(date);
       });
     rect.append('title').text(date + '\n' + seconds_to_duration(usage_time));
+
+    if (usage_time > 0) {
+      const hours = usage_time / 3600;
+      svg
+        .append('text')
+        .attr('x', x + width / 2 + '%')
+        .attr('y', (95 - height) + '%')
+        .attr('text-anchor', 'middle')
+        .attr('font-family', 'sans-serif')
+        .attr('font-size', '8pt')
+        .attr('fill', '#AAA')
+        .text(hours.toFixed(1) + 'h');
+    }
   });
 }
 

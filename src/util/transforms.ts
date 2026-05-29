@@ -6,7 +6,7 @@ import { get_hour_offset } from '~/util/time';
 export function split_by_hour_into_data(events) {
   if (events === undefined || events === null || events.length == 0) return [];
   const d = moment(events[0].timestamp).startOf('day');
-  const hoursOffset = get_hour_offset();
+  const hoursOffset = 0;
   return _.range(0, 24).map(h => {
     h += hoursOffset;
     let duration = 0;
