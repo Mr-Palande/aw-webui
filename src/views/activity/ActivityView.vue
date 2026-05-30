@@ -507,7 +507,7 @@ export default {
   z-index: 2 !important;
   display: grid !important;
   grid-template-columns: repeat(4, 1fr) !important;
-  grid-auto-rows: 260px !important;
+  grid-auto-rows: 280px !important;
   gap: 1rem !important;
   padding: 0.5rem 0 !important;
   width: 100% !important;
@@ -538,7 +538,7 @@ export default {
   bottom: 0.5rem;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: 260px;
+  grid-auto-rows: 280px;
   gap: 1rem;
   pointer-events: none;
   z-index: 1;

@@ -56,8 +56,7 @@ export function periodLengthConvertMoment(periodLength: string) {
   if (periodLength === 'day') {
     return 'day';
   } else if (periodLength === 'week') {
-    /* This is necessary so the week starts on Monday instead of Sunday */
-    return settingsStore.startOfWeek == 'Monday' ? 'isoWeek' : 'week';
+    return 'week';
   } else if (periodLength === 'month') {
     return 'month';
   } else if (periodLength === 'year') {

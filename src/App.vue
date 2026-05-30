@@ -13,6 +13,8 @@ div#wrapper(v-if="loaded" style="position: relative; z-index: 1; min-height: 100
         router-view
 
   aw-footer(style="position: relative; z-index: 10;")
+
+  onboarding-modal
 </template>
 
 <script lang="ts">

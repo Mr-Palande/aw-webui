@@ -104,7 +104,7 @@ export default {
       selectedHosts: [] as string[],
       selectedCategories: [JSON.stringify(['Work'])],
       breakTime: 5,
-      dateRange: 'last7d',
+      dateRange: 'thisWeek',
 
       loading: false,
       dailyData: [] as DailyData[],
@@ -125,8 +125,6 @@ export default {
     },
     dateRangeOptions() {
       return [
-        { value: 'last7d', text: 'Last 7 days' },
-        { value: 'last30d', text: 'Last 30 days' },
         { value: 'thisWeek', text: 'This week' },
         { value: 'thisMonth', text: 'This month' },
       ];
@@ -271,11 +269,7 @@ export default {
 
       let days: number;
 
-      if (this.dateRange === 'last7d') {
-        days = 7;
-      } else if (this.dateRange === 'last30d') {
-        days = 30;
-      } else if (this.dateRange === 'thisWeek') {
+      if (this.dateRange === 'thisWeek') {
         days = moment().isoWeekday(); // Mon=1 .. Sun=7
       } else if (this.dateRange === 'thisMonth') {
         days = moment().date(); // 1-based day of month

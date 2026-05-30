@@ -59,6 +59,8 @@ interface State {
 
   // Set to true if settings loaded
   _loaded: boolean;
+
+  hasCompletedOnboarding: boolean;
 }
 
 export const useSettingsStore = defineStore('settings', {
@@ -102,6 +104,7 @@ export const useSettingsStore = defineStore('settings', {
     requestTimeout: 30,
 
     _loaded: false,
+    hasCompletedOnboarding: false,
   }),
 
   getters: {
@@ -179,6 +182,19 @@ export const useSettingsStore = defineStore('settings', {
       }
       this.$patch({ ...storage, _loaded: true });
 
+      // Apply startOfWeek to moment locale globally so `.startOf('week')` works everywhere
+      const dowMap: Record<string, number> = {
+        'Sunday': 0,
+        'Monday': 1,
+        'Saturday': 6
+      };
+      const dow = dowMap[this.startOfWeek] ?? 1; // Default to Monday
+      moment.updateLocale('en', {
+        week: {
+          dow: dow
+        }
+      });
+
       // Since `requestTimeout` is used to initialize the client, we need to set it again
       // https://github.com/ActivityWatch/activitywatch/issues/979
       client.req.defaults.timeout = this.requestTimeout * 1000;
@@ -247,6 +263,21 @@ export const useSettingsStore = defineStore('settings', {
       console.log('Updating state', new_state);
       await this.ensureLoaded();
       this.$patch(new_state);
+
+      if (new_state.startOfWeek !== undefined) {
+        const dowMap: Record<string, number> = {
+          'Sunday': 0,
+          'Monday': 1,
+          'Saturday': 6
+        };
+        const dow = dowMap[this.startOfWeek] ?? 1;
+        moment.updateLocale('en', {
+          week: {
+            dow: dow
+          }
+        });
+      }
+
       await this.save();
     },
   },

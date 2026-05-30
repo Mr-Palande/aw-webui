@@ -46,6 +46,7 @@ Vue.component('aw-select-categories', () => import('./components/SelectCategorie
 Vue.component('aw-select-categories-or-pattern', () =>
   import('./components/SelectCategoriesOrPattern.vue')
 );
+Vue.component('onboarding-modal', () => import('./components/OnboardingModal.vue'));
 
 // Visualization components
 Vue.component('aw-summary', () => import('./visualizations/Summary.vue'));

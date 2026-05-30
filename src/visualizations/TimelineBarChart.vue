@@ -59,7 +59,7 @@ export default {
       const start = this.timeperiod_start;
       const [count, resolution] = this.timeperiod_length;
       if (resolution.startsWith('day') && count == 1) {
-        const hourOffset = 0;
+        const hourOffset = Math.floor(get_hour_offset());
         return _.range(0, 24).map(h => `${(h + hourOffset) % 24}`);
       } else if (resolution.startsWith('day')) {
         return _.range(count).map(d => `${d + 1}`);
@@ -87,7 +87,19 @@ export default {
       }
     },
     chartData() {
+      const [count, resolution] = this.timeperiod_length;
       let datasets = _.sortBy(this.datasets, d => d.label);
+
+      // For single-day view, rotate data arrays to match the shifted labels
+      if (resolution.startsWith('day') && count == 1) {
+        const hourOffset = Math.floor(get_hour_offset());
+        if (hourOffset > 0) {
+          datasets = datasets.map(ds => ({
+            ...ds,
+            data: [...ds.data.slice(hourOffset), ...ds.data.slice(0, hourOffset)],
+          }));
+        }
+      }
 
       return {
         labels: this.labels,

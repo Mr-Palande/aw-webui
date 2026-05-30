@@ -2,8 +2,7 @@
 div
   h3.mb-0 Activity #[span.d-sm-inline.d-none for ]
     span.text-muted.d-sm-inline-block.d-block
-      span(v-if="periodIsBrowseable") {{ timeperiod | friendlyperiod }}
-      span(v-else) {{ {"last7d": "last 7 days", "last30d": "last 30 days"}[periodLength] }}
+      span {{ timeperiod | friendlyperiod }}
 
   div.mb-3.text-muted(style="font-size: 0.9em;")
     ul.list-group.list-group-horizontal-md
@@ -25,8 +24,12 @@ div
           b-button.px-2(:to="link_prefix + '/' + previousPeriod() + '/' + subview + '/' + currentViewId",
                    variant="outline-dark")
             icon(name="arrow-left")
-        b-select.pl-2.pr-3(:value="periodLength", :options="periodLengths",
-                 @change="(periodLength) => setDate(_date, periodLength)")
+        b-dropdown(:text="periodLengths[periodLength]", variant="outline-dark")
+          b-dropdown-item(
+            v-for="(name, pLength) in periodLengths",
+            :key="pLength",
+            @click="setDate(_date, pLength)"
+          ) {{ name }}
         b-input-group-append
           b-button.px-2(:to="link_prefix + '/' + nextPeriod() + '/' + subview + '/' + currentViewId",
                         :disabled="nextPeriod() > today", variant="outline-dark")
@@ -298,15 +301,7 @@ export default {
       if (settingsStore.showYearly) {
         periods['year'] = 'year';
       }
-      periods = {
-        ...periods,
-        last7d: '7 days',
-        last30d: '30 days',
-      };
       return periods;
-    },
-    periodIsBrowseable: function () {
-      return ['day', 'week', 'month', 'year'].includes(this.periodLength);
     },
     currentView: function () {
       return this.views.find(v => v.id == this.$route.params.view_id) || this.views[0];
@@ -341,21 +336,10 @@ export default {
     timeperiod: function () {
       const settingsStore = useSettingsStore();
 
-      if (this.periodIsBrowseable) {
-        return {
-          start: get_day_start_with_offset(this._date, settingsStore.startOfDay),
-          length: [1, this.periodLength],
-        };
-      } else {
-        const len = { last7d: [7, 'days'], last30d: [30, 'days'] }[this.periodLength];
-        return {
-          start: get_day_start_with_offset(
-            moment(this._date).subtract(len[0] - 1, len[1]),
-            settingsStore.startOfDay
-          ),
-          length: len,
-        };
-      }
+      return {
+        start: get_day_start_with_offset(this._date, settingsStore.startOfDay),
+        length: [1, this.periodLength],
+      };
     },
     periodReadableRange: function () {
       const periodStart = moment(this.timeperiod.start);
@@ -366,18 +350,7 @@ export default {
       // start and exactly when the week ends. The formatting code ends up being a bit more wonky, but it's
       // worth the tradeoff. https://github.com/ActivityWatch/aw-webui/pull/284
 
-      let periodLength;
-      if (this.periodIsBrowseable) {
-        periodLength = [1, this.periodLength];
-      } else {
-        if (this.periodLength === 'last7d') {
-          periodLength = [7, 'day'];
-        } else if (this.periodLength === 'last30d') {
-          periodLength = [30, 'day'];
-        } else {
-          throw 'unknown periodLength';
-        }
-      }
+      const periodLength = [1, this.periodLength];
 
       const startOfPeriod = periodStart.format(dateFormatString);
       const endOfPeriod = periodStart.add(...periodLength).format(dateFormatString);
@@ -450,16 +423,8 @@ export default {
       }
 
       let new_date;
-      if (periodLength == '7 days') {
-        periodLength = 'last7d';
-        new_date = momentJsDate.add(1, 'days').format('YYYY-MM-DD');
-      } else if (periodLength == '30 days') {
-        periodLength = 'last30d';
-        new_date = momentJsDate.add(1, 'days').format('YYYY-MM-DD');
-      } else {
-        const new_period_length_moment = periodLengthConvertMoment(periodLength);
-        new_date = momentJsDate.startOf(new_period_length_moment).format('YYYY-MM-DD');
-      }
+      const new_period_length_moment = periodLengthConvertMoment(periodLength);
+      new_date = momentJsDate.startOf(new_period_length_moment).format('YYYY-MM-DD');
       const path = `/activity/${this.host}/${periodLength}/${new_date}/${this.subview}/${this.currentViewId}`;
       if (this.$route.path !== path) {
         this.$router.push({
